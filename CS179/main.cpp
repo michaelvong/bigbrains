@@ -1,41 +1,74 @@
-#include "include/rapidjson/document.h"
-#include "include/rapidjson//writer.h"
-#include "include/rapidjson/stringbuffer.h"
 #include <iostream>
-#include <string>
+#include "include/rapidjson/document.h" 
+#include "include/rapidjson/writer.h"
+#include "include/rapidjson/stringbuffer.h"
+#include "include/rapidjson/filereadstream.h"
+#include "include/rapidjson/filewritestream.h"
+#include <cstdio>
+#include <filesystem>
+#include "collection.h"
+#include "database.h"
+#include "document.h"
+//#include "inputHandler.h"
 
+using namespace std;
 using namespace rapidjson;
-int Menu(){
-     int option;
-     std::cout << "Welcome to bigBrainsDB select from menu please: " << std::endl;
-     std::cout << "1.)Add JSON File "<< std::endl;
+int main(){
+    Database database;
+    Collection collection1;
+    //InputHandler inputManager;
+    Dock *doc = new Dock();
+    Dock *doc2 = new Dock();
+    Collection *coll1 = new Collection();
 
-     std::cout << "2.)View JSON File "<< std::endl;
-     std::cout << "3.)Quit "<< std::endl;
-     std:: cin >> option;
-     return option;
-}
+    //database.add(&collection1);
 
-int main() {
-    // 1. Parse a JSON string into DOM.
-    //Getting the file path
+    FILE* fp = fopen("sample1.json", "rb"); // non-Windows use "r" 
+ 
+    char readBuffer[65536];
+    FileReadStream is(fp, readBuffer, sizeof(readBuffer));
 
-
-
-    const char* json = "{\"Hello\":\"rapidjson\",\"stars\":10}";
     Document d;
-    d.Parse(json);
+    d.ParseStream(is);
 
-    // 2. Modify it by DOM.
-    Value& s = d["stars"];
-    s.SetInt(s.GetInt() + 1);
+    fclose(fp);
+    // cout << readBuffer;
+    
+    // std::string test = readBuffer;
+    // doc->setData(readBuffer);
+    // doc->print();
+    // cout << "============" << endl;
+    // collection1.add(doc);
+    // collection1.print();
 
-    // 3. Stringify the DOM
-    StringBuffer buffer;
-    Writer<StringBuffer> writer(buffer);
-    d.Accept(writer);
+    //cout << readBuffer;
 
-    // Output {"project":"rapidjson","stars":11}
-    std::cout << buffer.GetString() << std::endl;
+    doc->setData(readBuffer);
+    //doc->print(); /works
+    doc->setPath("test.json");
+    doc2->setPath("test2.json");
+    collection1.add(doc);
+    collection1.add(doc2);
+    collection1.print();
+    cout << "=====" << endl;
+    collection1.remove(doc->getPath());
+    collection1.print();
+
+    database.add(&collection1);
+
+
+    //doc->setPath("metadata.json");
+    //cout << doc->getPath();
+    //cout << inputManager.displayMenu();
     return 0;
+
+
+    // bool complete = false;
+	// while (!complete)
+	// {
+    //     int option = inputManager.displayMenu();
+    //     if (option == 1){
+            
+    //     }
+    // }
 }

@@ -19,6 +19,8 @@ public:
     void remove (std::string);
     void print ();
     void setName (std::string);
+    std::string getPath ();
+    void setPath (std::string);
 };
 
 //add a document to this collection
@@ -45,4 +47,14 @@ void Collection::print(){
 //set the name of this collection
 void Collection::setName(std::string n){
     this->name = n;
+}
+
+//set path of json file
+void Collection::setPath(std::string path){
+    this->filePath = "/" + path;
+}
+
+//get the path of json file
+std::string Collection::getPath(){
+    return this->filePath;
 }

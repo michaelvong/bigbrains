@@ -15,6 +15,8 @@ private:
     int size;
     std::vector<Dock*> documents;
 public:
+    Collection();
+    Collection(std::string collName);
     void add (Dock*);
     void remove (std::string);
     void print ();
@@ -22,6 +24,20 @@ public:
     std::string getPath ();
     void setPath (std::string);
 };
+
+
+//Default Constructor
+Collection::Collection(){
+    name = "";
+    filePath = "";
+    size = 0;
+}
+
+//Constructor
+Collection::Collection(std::string collName){
+    name = collName;
+    std::cout << "Collection created, collName: " << name << std::endl;
+}
 
 //add a document to this collection
 void Collection::add (Dock* doc){

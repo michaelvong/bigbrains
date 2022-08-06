@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+using namespace std;
 
 class Dock
 {
@@ -13,11 +14,26 @@ private:
     int size;
     std::string data;
 public:
+    Dock();
+    Dock(string fileName);
     void setData (std::string);
     void setPath (std::string);
     std::string getPath ();
     void print ();
 };
+
+//Default Constructor
+Dock::Dock(){
+    name = "";
+    filePath = "";
+    size = 0;
+}
+
+//Constructor
+Dock::Dock(std::string fileName){
+    name = fileName;
+    std::cout << "Document created, fileName: " << name << std::endl;
+}
 
 //set data from the json file
 void Dock::setData(std::string d){

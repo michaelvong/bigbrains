@@ -16,11 +16,27 @@ private:
     int size;
     std::vector<Collection*> collections;
 public:
+    Database();
+    Database(std::string dbName);
     void add (Collection*);
     void remove (std::string);
     void print ();
     void setName (std::string);
 };
+
+
+//Default Constructor
+Database::Database(){
+    name = "";
+    filePath = "";
+    size = 0;
+}
+
+//Constructor
+Database::Database(std::string dbName){
+    name = dbName;
+    std::cout << "Database created, dbName: " << name << std::endl;
+}
 
 //add a collection to this database
 void Database::add (Collection* coll){

@@ -17,11 +17,14 @@ private:
     std::vector<Collection*> collections;
 public:
     Database();
-    Database(std::string dbName);
+    Database(std::string dbName) {this->name = dbName;}
     void add (Collection*);
     void remove (std::string);
     void print ();
+    void printAll();
     void setName (std::string);
+    std::string getPath();
+    Collection* getCollection(int);
 };
 
 
@@ -30,12 +33,6 @@ Database::Database(){
     name = "";
     filePath = "";
     size = 0;
-}
-
-//Constructor
-Database::Database(std::string dbName){
-    name = dbName;
-    std::cout << "Database created, dbName: " << name << std::endl;
 }
 
 //add a collection to this database
@@ -62,4 +59,33 @@ void Database::print(){
 //set the name of this collection
 void Database::setName(std::string n){
     this->name = n;
+}
+
+void Database::printAll(){
+    if (this->collections.size() == 0){
+        std::cout << "Database \"" << this->name << "\" is empty." << endl;
+    }
+    else{
+        std::cout << "Database Name: " << this->name << endl;
+        for (int i = 0; i < this->collections.size(); i++){
+            std::cout << "Collection: " << this->collections.at(i)->getName() << std::endl;
+            if (this->collections.at(i)->getDocuments().size() == 0){
+                std::cout << "\t{This collection is empty}" << endl;
+            } else {
+                std::cout << "\tDocuments: " << std::endl;
+                for (int j = 0; j < this->collections.at(i)->getDocuments().size(); j++){
+                    std::cout << "\t\t" << this->collections.at(i)->getDocuments(j)->getPath() << endl;
+                }
+            }
+        }
+    }
+}
+
+std::string Database::getPath(){
+    return this->name;
+}
+
+
+Collection* Database::getCollection(int i){
+    return collections.at(i);
 }

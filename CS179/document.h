@@ -15,7 +15,7 @@ private:
     std::string data;
 public:
     Dock();
-    Dock(string fileName);
+    Dock(string fileName) {this->filePath = fileName; }
     void setData (std::string);
     void setPath (std::string);
     std::string getPath ();
@@ -27,12 +27,6 @@ Dock::Dock(){
     name = "";
     filePath = "";
     size = 0;
-}
-
-//Constructor
-Dock::Dock(std::string fileName){
-    name = fileName;
-    std::cout << "Document created, fileName: " << name << std::endl;
 }
 
 //set data from the json file

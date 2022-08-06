@@ -16,13 +16,16 @@ private:
     std::vector<Dock*> documents;
 public:
     Collection();
-    Collection(std::string collName);
+    Collection(std::string collName) { this->name = collName;}
     void add (Dock*);
     void remove (std::string);
     void print ();
     void setName (std::string);
     std::string getPath ();
     void setPath (std::string);
+    std::string getName();
+    std::vector<Dock*> getDocuments() {return this->documents; }
+    Dock* getDocuments(int);
 };
 
 
@@ -31,12 +34,6 @@ Collection::Collection(){
     name = "";
     filePath = "";
     size = 0;
-}
-
-//Constructor
-Collection::Collection(std::string collName){
-    name = collName;
-    std::cout << "Collection created, collName: " << name << std::endl;
 }
 
 //add a document to this collection
@@ -73,4 +70,14 @@ void Collection::setPath(std::string path){
 //get the path of json file
 std::string Collection::getPath(){
     return this->filePath;
+}
+
+//get the name of collection
+std::string Collection::getName(){
+    return this->name;
+}
+
+//return documents 
+Dock* Collection::getDocuments(int i){
+    return documents.at(i);
 }

@@ -57,6 +57,7 @@ int main(){
                 inputManager.addDB(&allDatabases);
             }
         }
+
         //REMOVE
         else if (option == 2){
             int subOpt = inputManager.displaySubMenu();

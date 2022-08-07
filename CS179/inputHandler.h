@@ -51,6 +51,7 @@ int InputHandler::displayAddMenu(){
     return option;
 }
 
+
 //if remove is chosen, display the remove menu and return option
 int InputHandler::displaySubMenu(){
     std::string temp;

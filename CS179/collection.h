@@ -65,7 +65,7 @@ void Collection::print(){
     }
     else{
         for (int i = 0; i < this->documents.size(); i++){
-            std::cout << i << ". " << documents.at(i)->getPath() << std::endl;
+            std::cout << i << ". " << documents.at(i)->getName() << std::endl;
         }
     }
 
@@ -77,8 +77,8 @@ void Collection::setName(std::string n){
 }
 
 //set path of json file
-void Collection::setPath(std::string path){
-    this->filePath = "/" + path;
+void Collection::setPath(std::string path){ 
+    this->filePath = path+this->name+"/";
 }
 
 //get the path of json file

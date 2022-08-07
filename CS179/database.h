@@ -11,20 +11,22 @@ using namespace std;
 class Database
 {
 private:
+    const std::string folder = "STORAGE/";
     std::string name;
     std::string filePath;
     int size;
     std::vector<Collection*> collections;
 public:
     Database();
-    Database(std::string dbName) {this->name = dbName;}
+    Database(std::string dbName) {this->name = dbName; this->filePath = folder+dbName+"/"; } 
     void add (Collection*);
     void remove (std::string);
     void remove (int);
     void print ();
     void printAll();
     void setName (std::string);
-    std::string getPath();
+    std::string getName();
+    std::string getPath() {return this->filePath;}
     Collection* getCollection(int);
 };
 
@@ -93,7 +95,7 @@ void Database::printAll(){
     }
 }
 
-std::string Database::getPath(){
+std::string Database::getName(){
     return this->name;
 }
 

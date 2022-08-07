@@ -15,9 +15,13 @@ private:
 public:
     int displayMenu();
     int displayAddMenu();
+    int displaySubMenu();
     void addDoc(vector<Database*>*);
     void addColl(vector<Database*>*);
     void addDB(vector<Database*>*);
+    void removeDoc(vector<Database*>*);
+    void removeColl(vector<Database*>*);
+    void removeDB(vector<Database*>*);
 };
 
 //displays main menu for user and returns chosen option 
@@ -45,6 +49,74 @@ int InputHandler::displayAddMenu(){
     getline(cin,str);
     option = stoi(str);
     return option;
+}
+
+
+//if remove is chosen, display the remove menu and return option
+int InputHandler::displaySubMenu(){
+    std::string temp;
+    cout << "1. Remove a document" << endl;
+    cout << "2. Remove a collection" << endl;
+    cout << "3. Remove a database" << endl;
+    getline(cin,temp);
+    int option = stoi(temp);
+    return option;
+}
+
+//removes doc from chosen db and collection
+//prints success if successful
+void InputHandler::removeDoc(vector<Database*>* DB){
+    string DBchoose, collChoose, docRemove;
+    if (DB->size() != 0){ //if database !empty, display them
+        cout << "Choose a database: " << endl;
+        for (int i = 0; i < DB->size(); i++){
+            cout << i << ". " << DB->at(i)->getPath() << endl;
+        }
+        getline(cin, DBchoose);
+        cout << "Choose a collection from this database: " << endl;
+        DB->at(stoi(DBchoose))->print(); //assuming DBchoose is int, prints all collections in the chosen DB
+        getline(cin, collChoose);
+        cout << "Choose a document to remove: " << endl;
+        DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->print();
+        getline(cin, docRemove);
+        DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->remove(stoi(docRemove));
+    } else { //database empty
+        cout << "No databases to choose from." << endl;
+    }
+}
+
+//removes collection from chosen database
+void InputHandler::removeColl(vector<Database*>* DB){
+    string DBchoose, collChoose;
+    if (DB->size() != 0){ //if database !empty, display them
+        cout << "Choose a database: " << endl;
+        for (int i = 0; i < DB->size(); i++){
+            cout << i << ". " << DB->at(i)->getPath() << endl;
+        }
+        getline(cin, DBchoose);
+        cout << "Choose a collection from this database: " << endl;
+        DB->at(stoi(DBchoose))->print(); //assuming DBchoose is int, prints all collections in the chosen DB
+        getline(cin, collChoose);
+        DB->at(stoi(DBchoose))->remove(stoi(collChoose));
+    } else { //database empty
+        cout << "No databases to choose from." << endl;
+    }
+}
+
+//removes DB from main vector of DB
+void InputHandler::removeDB(vector<Database*>* DB){
+    string DBchoose;
+    if (DB->size() != 0){ //if database !empty, display them
+        cout << "Choose a database: " << endl;
+        for (int i = 0; i < DB->size(); i++){
+            cout << i << ". " << DB->at(i)->getPath() << endl;
+        }
+        getline(cin, DBchoose);
+        DB->erase(DB->begin() + stoi(DBchoose));
+        cout << "Successfully removed" << endl;
+    } else { //database empty
+        cout << "No databases to choose from." << endl;
+    }
 }
 
 //adds document to chosen database/collection

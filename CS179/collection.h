@@ -19,6 +19,7 @@ public:
     Collection(std::string collName) { this->name = collName;}
     void add (Dock*);
     void remove (std::string);
+    void remove (int);
     void print ();
     void setName (std::string);
     std::string getPath ();
@@ -46,15 +47,28 @@ void Collection::remove (std::string path){
     for (int i = 0; i < this->documents.size(); i++){
         if (this->documents.at(i)->getPath() == path){
             this->documents.erase(this->documents.begin()+i);
+            std::cout << "Sucessfully removed" << std::endl;
         }
     }
 }
 
+//removes a doc from vector by index
+void Collection::remove (int i){
+    this->documents.erase(this->documents.begin()+i);
+    std::cout << "Sucessfully removed" << std::endl;
+}
+
 //prints the jsons that are in this collection
 void Collection::print(){
-    for (int i = 0; i < this->documents.size(); i++){
-        std::cout << documents.at(i)->getPath() << std::endl;
+    if (this->documents.size() == 0){
+        std::cout << "This collection is empty" << endl;
     }
+    else{
+        for (int i = 0; i < this->documents.size(); i++){
+            std::cout << i << ". " << documents.at(i)->getPath() << std::endl;
+        }
+    }
+
 }
 
 //set the name of this collection

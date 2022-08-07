@@ -44,7 +44,8 @@ int main(){
 	while (!complete)
 	{
         int option = inputManager.displayMenu();
-        if (option == 1){ //add option
+        //ADD
+        if (option == 1){ 
             int addOpt = inputManager.displayAddMenu();
             if (addOpt == 1){ //add doc
                 inputManager.addDoc(&allDatabases);
@@ -54,6 +55,20 @@ int main(){
             }
             else if (addOpt == 3){ //add db
                 inputManager.addDB(&allDatabases);
+            }
+        }
+
+        //REMOVE
+        else if (option == 2){
+            int subOpt = inputManager.displaySubMenu();
+            if (subOpt == 1){ //remove doc
+                inputManager.removeDoc(&allDatabases);
+            }
+            else if (subOpt == 2){ //remove coll
+                inputManager.removeColl(&allDatabases);
+            }
+            else if (subOpt == 3){ //remove DB
+                inputManager.removeDB(&allDatabases);
             }
         }
         else if (option == 4){ //exit

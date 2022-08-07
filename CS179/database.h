@@ -20,6 +20,7 @@ public:
     Database(std::string dbName) {this->name = dbName;}
     void add (Collection*);
     void remove (std::string);
+    void remove (int);
     void print ();
     void printAll();
     void setName (std::string);
@@ -40,7 +41,7 @@ void Database::add (Collection* coll){
     this->collections.push_back(coll);
 }
 
-//removes a doc from vector by matching path names
+//removes a collection from vector by matching path names
 void Database::remove (std::string path){
     for (int i = 0; i < this->collections.size(); i++){
         if (this->collections.at(i)->getPath() == path){
@@ -49,10 +50,21 @@ void Database::remove (std::string path){
     }
 }
 
+//removes a collection from vector by matching index
+void Database::remove (int i){
+    this->collections.erase(this->collections.begin()+i);
+    std::cout << "Sucessfully removed" << std::endl;  
+}
+
 //prints the jsons that are in this collection
 void Database::print(){
-    for (int i = 0; i < this->collections.size(); i++){
-        std::cout << collections.at(i)->getPath() << std::endl;
+    if (this->collections.size() == 0){
+        std::cout << "This database is empty" << endl;
+    }
+    else{
+        for (int i = 0; i < this->collections.size(); i++){
+            std::cout << i << ". " << collections.at(i)->getName() << std::endl;
+        }
     }
 }
 

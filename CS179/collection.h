@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 #include "document.h"
-#include "direct.h"
+//#include "direct.h" //uncomment this when using windows
+#include "unistd.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdio>

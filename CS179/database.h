@@ -5,7 +5,7 @@
 #include <vector>
 #include "collection.h"
 #include "document.h"
-
+#include "unistd.h"
 using namespace std;
 
 class Database

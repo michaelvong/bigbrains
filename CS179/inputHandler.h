@@ -6,7 +6,6 @@
 #include "collection.h"
 #include "database.h"
 #include <string>
-#include "direct.h" //uncomment this when using windows
 #include "unistd.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,6 +16,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/filewritestream.h"
+//#include "direct.h" //uncomment this when using windows
 
 using namespace std;
 using std::filesystem::directory_iterator;
@@ -124,7 +124,6 @@ void InputHandler::removeColl(vector<Database*>* DB){
             DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->deleteDocs();
         }
         if(rmdir(c) == -1){
-            //cerr << " Error : " << strerror(errno) << endl;
             cout << "Error in removing collection." << endl;
         } else {
             DB->at(stoi(DBchoose))->remove(stoi(collChoose));
@@ -281,5 +280,4 @@ void InputHandler::readData(vector<Database*>* DB){
             }
         }
     }
-
 }

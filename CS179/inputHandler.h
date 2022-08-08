@@ -9,11 +9,11 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <filesystem>
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/filereadstream.h"
-#include "rapidjson/filewritestream.h"
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/writer.h"
+#include "include/rapidjson/stringbuffer.h"
+#include "include/rapidjson/filereadstream.h"
+#include "include/rapidjson/filewritestream.h"
 #include "database.h"
 using namespace std;
 using std::filesystem::directory_iterator;
@@ -24,12 +24,14 @@ public:
     int displayMenu();
     int displayAddMenu();
     int displaySubMenu();
+    int displayUpdateMenu();
     void addDB(vector<Database*>*);
     void addColl(vector<Database*>*);
     void addDoc(vector<Database*>*);
     void readData(vector<Database*>*);
     void removeDB(vector<Database*>*);
     void removeColl(vector<Database*>*);
+    void updateDB(vector<Database*>*);
 };
 
 //displays main menu for user and returns chosen option 
@@ -55,6 +57,18 @@ int InputHandler::displayAddMenu(){
     cout << "1. Add a document" << endl;
     cout << "2. Add a collection" << endl;
     cout << "3. Add a database" << endl;
+    getline(cin,str);
+    option = stoi(str);
+    return option;
+}
+
+//if update is chosen, display the UPDATE menu and return chosen option
+int InputHandler::displayUpdateMenu(){
+    std::string str;
+    int option;
+    cout << "1. Update a document" << endl;
+    cout << "2. Update a collection" << endl;
+    cout << "3. Update a database" << endl;
     getline(cin,str);
     option = stoi(str);
     return option;
@@ -192,4 +206,31 @@ void InputHandler::removeDB(vector<Database*>* DB){
     } else { //database empty
         cout << "No databases to choose from." << endl;
     }
+}
+
+//updates database
+void InputHandler::updateDB(vector<Database*>* DB){
+    string DBchoose, temp;
+    cout << "Choose a database: ";
+    for (int i = 0; i < DB->size(); i++){
+        cout << i << ". " << DB->at(i)->getName() << endl;
+    }
+    getline(cin, DBchoose);
+
+    cout << "Rename " << DB->at(stoi(DBchoose))->getName() << " to: " <<endl;
+    getline(cin, temp);
+
+    DB->at(stoi(DBchoose))->setName(temp);
+
+    cout << "Database name updated!" << endl;
+
+    cout << DB->at(stoi(DBchoose))->getName() << endl;
+    
+    // if(mkdir(c) == -1){
+    //     //cerr << " Error : " << strerror(errno) << endl; //check which error its giving
+    //     cout << "Error in creating database." << endl;
+    // } else {
+    //     DB->push_back(databasePtr);
+    //     cout << "Database created!" << endl;
+    // }
 }

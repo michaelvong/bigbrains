@@ -5,18 +5,17 @@
 #include <sstream>
 #include <fstream>
 #include <cstring>
-
-#include "include/rapidjson/document.h"
-#include "include/rapidjson/writer.h"
-#include "include/rapidjson/stringbuffer.h"
-#include "include/rapidjson/filereadstream.h"
-#include "include/rapidjson/filewritestream.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/filewritestream.h"
 #include <cstdio>
 #include <filesystem>
 #include "document.h"
 #include "inputHandler.h"
 #include "database.h"
-#include "include/rapidjson/ostreamwrapper.h"
+#include "rapidjson/ostreamwrapper.h"
 using namespace std;
 using namespace rapidjson;
 using std::filesystem::directory_iterator;
@@ -27,6 +26,7 @@ int main(){
     const char* json = "{\"project\":\"rapidjson\",\"stars\":10}";
     Document d;
     d.Parse(json);
+
     
     // 2. Modify it by DOM.
     Value& s = d["stars"];
@@ -67,14 +67,13 @@ int main(){
                 //remove doc
             }
             else if (remOpt == 2){
-                //remove coll
+                inputManager.removeColl(&allDatabases);
             }
             else if (remOpt == 3){
                 inputManager.removeDB(&allDatabases);
             }
         }
-
-        if (option == 3){
+        else if (option == 3){
             int updateOpt = inputManager.displayUpdateMenu();
             if (updateOpt == 1){
                 //inputManager.updateDoc(&allDatabases);

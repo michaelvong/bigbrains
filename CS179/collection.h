@@ -1,76 +1,39 @@
 #pragma once
 
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/writer.h"
+#include "include/rapidjson/stringbuffer.h"
+#include "include/rapidjson/filereadstream.h"
+#include "include/rapidjson/filewritestream.h"
 #include <iostream>
 #include <string>
 #include <vector>
-#include "document.h"
+
 
 using namespace std;
+using namespace rapidjson;
 
-class Collection
-{
+class Collection{
 private:
-    std::string name;
-    std::string filePath;
-    int size;
-    std::vector<Dock*> documents;
+    string name;
+    string path;
+    vector<Document*> documents;
 public:
     Collection();
-    Collection(std::string collName);
-    void add (Dock*);
-    void remove (std::string);
-    void print ();
-    void setName (std::string);
-    std::string getPath ();
-    void setPath (std::string);
+    Collection(string fileName, string dbPath) {this->path = dbPath+fileName; this->name = fileName;}
+    string getPath(){return this->path;}
+    string getName(){return this->name;}
+    void addDoc(Document*);
+    Document* getDocAt(int);
+    vector<Document*> getDocs() {return this->documents;}
 };
 
+Collection::Collection(){}
 
-//Default Constructor
-Collection::Collection(){
-    name = "";
-    filePath = "";
-    size = 0;
+void Collection::addDoc(Document* d){
+    this->documents.push_back(d);
 }
 
-//Constructor
-Collection::Collection(std::string collName){
-    name = collName;
-    std::cout << "Collection created, collName: " << name << std::endl;
-}
-
-//add a document to this collection
-void Collection::add (Dock* doc){
-    this->documents.push_back(doc);
-}
-
-//removes a doc from vector by matching path names
-void Collection::remove (std::string path){
-    for (int i = 0; i < this->documents.size(); i++){
-        if (this->documents.at(i)->getPath() == path){
-            this->documents.erase(this->documents.begin()+i);
-        }
-    }
-}
-
-//prints the jsons that are in this collection
-void Collection::print(){
-    for (int i = 0; i < this->documents.size(); i++){
-        std::cout << documents.at(i)->getPath() << std::endl;
-    }
-}
-
-//set the name of this collection
-void Collection::setName(std::string n){
-    this->name = n;
-}
-
-//set path of json file
-void Collection::setPath(std::string path){
-    this->filePath = "/" + path;
-}
-
-//get the path of json file
-std::string Collection::getPath(){
-    return this->filePath;
+Document* Collection::getDocAt(int i){
+    return this->documents.at(i);
 }

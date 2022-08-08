@@ -1,57 +1,21 @@
 #pragma once
 
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/writer.h"
+#include "include/rapidjson/stringbuffer.h"
+#include "include/rapidjson/filereadstream.h"
+#include "include/rapidjson/filewritestream.h"
 #include <iostream>
 #include <string>
 #include <vector>
 
 using namespace std;
+using namespace rapidjson;
+
+
 
 class Dock
 {
-private:
-    std::string name; //not needed?
-    std::string filePath;
-    int size;
-    std::string data;
-public:
-    Dock();
-    Dock(string fileName);
-    void setData (std::string);
-    void setPath (std::string);
-    std::string getPath ();
-    void print ();
+    
+
 };
-
-//Default Constructor
-Dock::Dock(){
-    name = "";
-    filePath = "";
-    size = 0;
-}
-
-//Constructor
-Dock::Dock(std::string fileName){
-    name = fileName;
-    std::cout << "Document created, fileName: " << name << std::endl;
-}
-
-//set data from the json file
-void Dock::setData(std::string d){
-    this->data = d;
-}
-
-//set path of json file
-void Dock::setPath(std::string path){
-    this->filePath = "/" + path;
-}
-
-//get the path of json file
-std::string Dock::getPath(){
-    return this->filePath;
-}
-
-
-//prints the raw data
-void Dock::print(){
-    std::cout << this->data;
-}

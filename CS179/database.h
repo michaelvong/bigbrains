@@ -1,65 +1,95 @@
 #pragma once
-
 #include <iostream>
-#include <string>
-#include <vector>
-#include "collection.h"
 #include "document.h"
-
+#include "collection.h"
+#include <string>
+#include "direct.h" //uncomment this when using windows
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fstream>
+#include <filesystem>
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/writer.h"
+#include "include/rapidjson/stringbuffer.h"
+#include "include/rapidjson/filereadstream.h"
+#include "include/rapidjson/filewritestream.h"
+#include "database.h"
 using namespace std;
-
+using namespace rapidjson;
 class Database
 {
 private:
-    std::string name;
-    std::string filePath;
-    int size;
-    std::vector<Collection*> collections;
+    const std::string folder = "STORAGE/";
+    string name;
+    string filePath;
+    vector<Collection*> collections;
 public:
     Database();
-    Database(std::string dbName);
-    void add (Collection*);
-    void remove (std::string);
-    void print ();
-    void setName (std::string);
+    Database(string n){this->name = n; this->filePath = folder+n+"/";}
+    void addColl(Collection*);
+    void removeColl(int);
+    void print();
+    string getPath() {return this->filePath; }
+    Collection* getCollection (int);
+    vector<Collection*> getCollections() {return this->collections;}
+    string getName() {return this->name; }
+    void printAll();
+    void deleteFiles();
+    void setName(std::string);
 };
 
 
-//Default Constructor
-Database::Database(){
-    name = "";
-    filePath = "";
-    size = 0;
-}
-
-//Constructor
-Database::Database(std::string dbName){
-    name = dbName;
-    std::cout << "Database created, dbName: " << name << std::endl;
+//set the name of this collection
+void Database::setName(std::string n){
+    this->name = n;
 }
 
 //add a collection to this database
-void Database::add (Collection* coll){
-    this->collections.push_back(coll);
+void Database::addColl(Collection* c){
+    this->collections.push_back(c);
 }
 
-//removes a doc from vector by matching path names
-void Database::remove (std::string path){
-    for (int i = 0; i < this->collections.size(); i++){
-        if (this->collections.at(i)->getPath() == path){
-            this->collections.erase(this->collections.begin()+i);
-        }
-    }
+//removes a collection from vector by matching index
+void Database::removeColl (int i){
+    this->collections.erase(this->collections.begin()+i);
+    std::cout << "Sucessfully removed" << std::endl;  
 }
 
 //prints the jsons that are in this collection
 void Database::print(){
     for (int i = 0; i < this->collections.size(); i++){
-        std::cout << collections.at(i)->getPath() << std::endl;
+        std::cout << i << ". " << collections.at(i)->getName() << std::endl;
     }
 }
 
-//set the name of this collection
-void Database::setName(std::string n){
-    this->name = n;
+//returns collection* at an index
+Collection* Database::getCollection(int i){
+    return collections.at(i);
+}
+
+void Database::printAll(){
+    if (this->collections.size() == 0){
+        std::cout << "Database \"" << this->name << "\" is empty." << endl;
+    }
+    else{
+        std::cout << "Database Name: " << this->name << endl;
+        for (int i = 0; i < this->collections.size(); i++){
+            cout << "Collection: " << this->collections.at(i)->getName() << endl;
+            for (int j = 0; j < this->collections.at(i)->getDocs().size(); j++){
+                StringBuffer buffer;
+                Writer<StringBuffer> writer(buffer);
+                this->collections.at(i)->getDocAt(j)->Accept(writer);
+                cout << "\t" << buffer.GetString() << endl;
+            }
+        }
+    }
+}
+
+void Database::deleteFiles(){
+    string temp;
+    for (int i = 0; i < this->collections.size(); i++){
+        temp = this->collections.at(i)->getPath();
+        const char *c = temp.c_str();
+        remove(c); 
+    }
 }

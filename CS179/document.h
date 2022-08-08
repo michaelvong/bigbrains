@@ -9,15 +9,16 @@ using namespace std;
 class Dock
 {
 private:
-    std::string name; //not needed?
+    std::string name;
     std::string filePath;
     int size;
     std::string data;
 public:
     Dock();
-    Dock(string fileName) {this->filePath = fileName; }
+    Dock(string fileName) {this->name = fileName; }
     void setData (std::string);
     void setPath (std::string);
+    std::string getName () {return this->name;}
     std::string getPath ();
     void print ();
 };
@@ -36,7 +37,7 @@ void Dock::setData(std::string d){
 
 //set path of json file
 void Dock::setPath(std::string path){
-    this->filePath = "/" + path;
+    this->filePath = path+this->name;
 }
 
 //get the path of json file

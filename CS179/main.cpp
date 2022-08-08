@@ -71,15 +71,14 @@ int main(){
                 inputManager.removeDB(&allDatabases);
             }
         }
+        else if (option == 3){ //print
+            for (int i = 0; i < allDatabases.size(); i++){
+                allDatabases.at(i)->printAll();
+            }
+        }
         else if (option == 4){ //exit
             complete = true;
         }
     }
-
-    //this for loops prints all databases and contents 
-    for (int i = 0; i < allDatabases.size(); i++){
-        allDatabases.at(i)->printAll();
-    }
- 
     return 0;
 }

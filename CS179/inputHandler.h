@@ -33,14 +33,14 @@ int InputHandler::displayMenu()
 {
     std::string str;
     int option;
-	cout << "Please select an option." << endl;
-	cout << "1. Add" << endl;
-	cout << "2. Remove" << endl;
-	cout << "3. Print" << endl;
+	  cout << "Please select an option." << endl;
+	  cout << "1. Add" << endl;
+	  cout << "2. Remove" << endl;
+	  cout << "3. Print" << endl;
     cout << "4. Quit" << endl;
     getline(cin, str);
     option = stoi(str);
-	return option;
+	  return option;
 }
 
 //if add is chosen, display the ADD menu and return chosen option

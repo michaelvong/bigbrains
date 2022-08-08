@@ -38,6 +38,10 @@ public:
     void setName(std::string);
 };
 
+//add a collection to this database
+void Database::addColl(Collection* c){
+    this->collections.push_back(c);
+}
 
 //set the name of this collection
 void Database::setName(std::string n){
@@ -53,10 +57,39 @@ void Database::addColl(Collection* c){
 void Database::removeColl (int i){
     this->collections.erase(this->collections.begin()+i);
     std::cout << "Sucessfully removed" << std::endl;  
-}
 
 //prints the jsons that are in this collection
 void Database::print(){
+    for (int i = 0; i < this->collections.size(); i++){
+        std::cout << i << ". " << collections.at(i)->getName() << std::endl;
+    }
+}
+
+//returns collection* at an index
+Collection* Database::getCollection(int i){
+    return collections.at(i);
+}
+
+void Database::printAll(){
+    if (this->collections.size() == 0){
+        std::cout << "Database \"" << this->name << "\" is empty." << endl;
+    }
+    else{
+        std::cout << "Database Name: " << this->name << endl;
+        for (int i = 0; i < this->collections.size(); i++){
+            cout << "Collection: " << this->collections.at(i)->getName() << endl;
+            for (int j = 0; j < this->collections.at(i)->getDocs().size(); j++){
+                StringBuffer buffer;
+                Writer<StringBuffer> writer(buffer);
+                this->collections.at(i)->getDocAt(j)->Accept(writer);
+                cout << "\t" << buffer.GetString() << endl;
+            }
+        }
+    }
+}
+
+void Database::deleteFiles(){
+    string temp;
     for (int i = 0; i < this->collections.size(); i++){
         std::cout << i << ". " << collections.at(i)->getName() << std::endl;
     }

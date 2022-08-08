@@ -15,21 +15,7 @@ using namespace rapidjson;
 int main(){
     vector<Database*> allDatabases;
     InputHandler inputManager;
-
-    FILE* fp = fopen("testtxt.json", "rb"); // non-Windows use "r"
- 
-    char readBuffer[65536];
-    FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-
-    Document d;
-    d.ParseStream(is);
-
-    fclose(fp);
-    //cout << readBuffer;
-    /*
-    doc->setData(readBuffer);
-    //doc->print(); /works
-    */
+    inputManager.readData(&allDatabases);
 
     bool complete = false;
 	while (!complete)

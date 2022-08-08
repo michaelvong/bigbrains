@@ -9,11 +9,11 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <filesystem>
-#include "include/rapidjson/document.h"
-#include "include/rapidjson/writer.h"
-#include "include/rapidjson/stringbuffer.h"
-#include "include/rapidjson/filereadstream.h"
-#include "include/rapidjson/filewritestream.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/filewritestream.h"
 #include "database.h"
 using namespace std;
 using std::filesystem::directory_iterator;
@@ -42,8 +42,9 @@ int InputHandler::displayMenu()
 	cout << "Please select an option." << endl;
 	cout << "1. Add" << endl;
 	cout << "2. Remove" << endl;
-	//cout << "3. Print" << endl;
-    //cout << "4. Quit" << endl;
+	cout << "3. Update" << endl;
+    cout << "4. Print" << endl;
+    cout << "5. Quit" << endl;
     getline(cin, str);
     option = stoi(str);
 	return option;
@@ -77,6 +78,7 @@ int InputHandler::displayUpdateMenu(){
 //if remove is chosen, display the remove menu and return option
 int InputHandler::displaySubMenu(){
     std::string temp;
+    cout << "Please select an option: " << endl;
     cout << "1. Remove a document" << endl;
     cout << "2. Remove a collection" << endl;
     cout << "3. Remove a database" << endl;
@@ -140,7 +142,7 @@ void InputHandler::addDoc(vector<Database*>* DB){
         if (buffer.GetString() != NULL){
             path = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath();
             const char *c = path.c_str();
-            FILE* fp = fopen(c, "wb");
+            FILE* fp = fopen(c, "a");
             char writeBuffer[65536];
             FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
             Writer<FileWriteStream> writer(os);
@@ -202,6 +204,31 @@ void InputHandler::removeDB(vector<Database*>* DB){
         } else {
             DB->erase(DB->begin() + stoi(DBchoose));
             cout << "Database removed!" << endl;
+        }
+    } else { //database empty
+        cout << "No databases to choose from." << endl;
+    }
+}
+
+void InputHandler::removeColl(vector<Database*>* DB){
+    string DBchoose, collChoose, temp;
+    if (DB->size() != 0){ //if database !empty, display them
+        cout << "Choose a database: " << endl;
+        for (int i = 0; i < DB->size(); i++){
+            cout << i << ". " << DB->at(i)->getName() << endl;
+        }
+        getline(cin, DBchoose);
+        cout << "Choose a collection from this database: " << endl;
+        DB->at(stoi(DBchoose))->print(); //assuming DBchoose is int, prints all collections in the chosen DB
+        getline(cin, collChoose);
+        temp = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath();
+        const char *c = temp.c_str();
+        if(remove(c) != 0){
+            //cerr << " Error : " << strerror(errno) << endl;
+            cout << "Error in removing collection." << endl;
+        } else {
+            DB->at(stoi(DBchoose))->removeColl(stoi(collChoose));
+            cout << "Collection removed." << endl;
         }
     } else { //database empty
         cout << "No databases to choose from." << endl;

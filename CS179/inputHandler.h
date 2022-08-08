@@ -6,7 +6,8 @@
 #include "collection.h"
 #include "database.h"
 #include <string>
-#include "direct.h"
+//#include "direct.h" //uncomment this when using windows
+#include "unistd.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -32,14 +33,14 @@ int InputHandler::displayMenu()
 {
     std::string str;
     int option;
-	cout << "Please select an option." << endl;
-	cout << "1. Add" << endl;
-	cout << "2. Remove" << endl;
-	//cout << "3. Search" << endl;
-    cout << "3. Quit" << endl;
+	  cout << "Please select an option." << endl;
+	  cout << "1. Add" << endl;
+	  cout << "2. Remove" << endl;
+	  cout << "3. Print" << endl;
+    cout << "4. Quit" << endl;
     getline(cin, str);
     option = stoi(str);
-	return option;
+	  return option;
 }
 
 //if add is chosen, display the ADD menu and return chosen option
@@ -88,7 +89,7 @@ void InputHandler::removeDoc(vector<Database*>* DB){
             cout << "Error in deleting document." << endl;
         } else {
             cout << "Document deleted!" << endl;
-            DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->remove(stoi(docRemove));
+            DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->removeDoc(stoi(docRemove));
         }
     } else { //database empty
         cout << "No databases to choose from." << endl;
@@ -109,6 +110,9 @@ void InputHandler::removeColl(vector<Database*>* DB){
         getline(cin, collChoose);
         temp = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath();
         const char *c = temp.c_str();
+        if (!DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getDocuments().empty()) {
+            DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->deleteDocs();
+        }
         if(rmdir(c) == -1){
             cout << "Error in removing collection." << endl;
         } else {
@@ -130,7 +134,10 @@ void InputHandler::removeDB(vector<Database*>* DB){
         }
         getline(cin, DBchoose);
         temp = DB->at(stoi(DBchoose))->getPath();
-        const char *c = temp.c_str(); 
+        const char *c = temp.c_str();
+        if (!DB->at(stoi(DBchoose))->getCollections().empty()) {
+            DB->at(stoi(DBchoose))->deleteFiles();
+        }
         if(rmdir(c) == -1){
             //cerr << " Error : " << strerror(errno) << endl;
             cout << "Error in removing database." << endl;
@@ -187,7 +194,7 @@ void InputHandler::addColl(vector<Database*>* DB){
         collPtr->setPath(DB->at(stoi(DBchoose1))->getPath());
         temp = collPtr->getPath();
         const char *f = temp.c_str();
-        if(mkdir(f) == -1){
+        if(mkdir(f,0777) == -1){
             //cerr << " Error : " << strerror(errno) << endl;
             cout << "Error in creating collection." << endl;
         } else {
@@ -207,7 +214,7 @@ void InputHandler::addDB(vector<Database*>* DB){
     Database *databasePtr = new Database(DBname);
     temp = databasePtr->getPath();
     const char *c = temp.c_str();
-    if(mkdir(c) == -1){
+    if(mkdir(c,0777) == -1){
         //cerr << " Error : " << strerror(errno) << endl; //check which error its giving
         cout << "Error in creating database." << endl;
     } else {

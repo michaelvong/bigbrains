@@ -4,7 +4,11 @@
 #include <string>
 #include <vector>
 #include "document.h"
-
+//#include "direct.h" //uncomment this when using windows
+#include "unistd.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <cstdio>
 using namespace std;
 
 class Collection
@@ -18,8 +22,8 @@ public:
     Collection();
     Collection(std::string collName) { this->name = collName;}
     void add (Dock*);
-    void remove (std::string);
-    void remove (int);
+    void removeDoc (std::string);
+    void removeDoc (int);
     void print ();
     void setName (std::string);
     std::string getPath ();
@@ -27,6 +31,7 @@ public:
     std::string getName();
     std::vector<Dock*> getDocuments() {return this->documents; }
     Dock* getDocuments(int);
+    void deleteDocs();
 };
 
 
@@ -43,19 +48,17 @@ void Collection::add (Dock* doc){
 }
 
 //removes a doc from vector by matching path names
-void Collection::remove (std::string path){
+void Collection::removeDoc (std::string path){
     for (int i = 0; i < this->documents.size(); i++){
         if (this->documents.at(i)->getPath() == path){
             this->documents.erase(this->documents.begin()+i);
-            std::cout << "Sucessfully removed" << std::endl;
         }
     }
 }
 
 //removes a doc from vector by index
-void Collection::remove (int i){
+void Collection::removeDoc (int i){
     this->documents.erase(this->documents.begin()+i);
-    std::cout << "Sucessfully removed" << std::endl;
 }
 
 //prints the jsons that are in this collection
@@ -94,4 +97,14 @@ std::string Collection::getName(){
 //return documents 
 Dock* Collection::getDocuments(int i){
     return documents.at(i);
+}
+
+//deletes all the json files from directory
+void Collection::deleteDocs(){
+    string temp;
+    for (int i = 0; i < this->documents.size(); i++){
+        temp = this->documents.at(i)->getPath();
+        const char *c = temp.c_str();
+        remove(c); 
+    }
 }

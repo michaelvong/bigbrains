@@ -47,14 +47,27 @@ int main(){
                 inputManager.addDB(&allDatabases);
             }
         }
-        else if (option == 4){
+        //REMOVE
+        else if (option == 2){
+            int subOpt = inputManager.displaySubMenu();
+            if (subOpt == 1){ //remove doc
+                inputManager.removeDoc(&allDatabases);
+            }
+            else if (subOpt == 2){ //remove coll
+                inputManager.removeColl(&allDatabases);
+            }
+            else if (subOpt == 3){ //remove DB
+                inputManager.removeDB(&allDatabases);
+            }
+        }
+        else if (option == 3){ //print
+            for (int i = 0; i < allDatabases.size(); i++){
+                allDatabases.at(i)->printAll();
+            }
+        }
+        else if (option == 4){ //exit
             complete = true;
         }
     }
-
-    for (int i = 0; i < allDatabases.size(); i++){
-        allDatabases.at(i)->printAll();
-    }
- 
     return 0;
 }

@@ -1,4 +1,10 @@
 #include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <cstring>
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -6,43 +12,64 @@
 #include "rapidjson/filewritestream.h"
 #include <cstdio>
 #include <filesystem>
-#include "database.h"
 #include "document.h"
 #include "inputHandler.h"
-
+#include "database.h"
+#include "rapidjson/ostreamwrapper.h"
 using namespace std;
 using namespace rapidjson;
+using std::filesystem::directory_iterator;
+
 int main(){
+    /*
+     // 1. Parse a JSON string into DOM.
+    const char* json = "{\"project\":\"rapidjson\",\"stars\":10}";
+    Document d;
+    d.Parse(json);
+
+    
+    // 2. Modify it by DOM.
+    Value& s = d["stars"];
+    s.SetInt(s.GetInt() + 1);
+
+    // 3. Stringify the DOM
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    d.Accept(writer);
+
+    // Output {"project":"rapidjson","stars":11}
+    std::cout << buffer.GetString() << std::endl;
+    */
     vector<Database*> allDatabases;
     InputHandler inputManager;
-    inputManager.readData(&allDatabases);
 
+    inputManager.readData(&allDatabases);
+    
     bool complete = false;
 	while (!complete)
 	{
         int option = inputManager.displayMenu();
         if (option == 1){
             int addOpt = inputManager.displayAddMenu();
-            if (addOpt == 1){ //add doc
+            if (addOpt == 1){
                 inputManager.addDoc(&allDatabases);
             }
-            else if (addOpt == 2){ //add coll
+            else if (addOpt == 2){
                 inputManager.addColl(&allDatabases);
             }
-            else if (addOpt == 3){ //add db
+            else if (addOpt == 3){
                 inputManager.addDB(&allDatabases);
             }
         }
-        //REMOVE
         else if (option == 2){
-            int subOpt = inputManager.displaySubMenu();
-            if (subOpt == 1){ //remove doc
-                inputManager.removeDoc(&allDatabases);
+            int remOpt = inputManager.displaySubMenu();
+            if (remOpt == 1){
+                //remove doc
             }
-            else if (subOpt == 2){ //remove coll
-                inputManager.removeColl(&allDatabases);
+            else if (remOpt == 2){
+                //remove coll
             }
-            else if (subOpt == 3){ //remove DB
+            else if (remOpt == 3){
                 inputManager.removeDB(&allDatabases);
             }
         }
@@ -51,7 +78,7 @@ int main(){
                 allDatabases.at(i)->printAll();
             }
         }
-        else if (option == 4){ //exit
+        else if (option == 4){
             complete = true;
         }
     }

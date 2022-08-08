@@ -24,21 +24,7 @@ using std::filesystem::directory_iterator;
 int main(){
     vector<Database*> allDatabases;
     InputHandler inputManager;
-
-    FILE* fp = fopen("testJSONFiles/sample1.json", "rb"); // non-Windows use "r"
- 
-    char readBuffer[65536];
-    FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-
-    Document d;
-    d.ParseStream(is);
-
-    fclose(fp);
-    //cout << readBuffer;
-    /*
-    doc->setData(readBuffer);
-    //doc->print(); /works
-    */
+    inputManager.readData(&allDatabases);
 
     bool complete = false;
 	while (!complete)
@@ -71,15 +57,14 @@ int main(){
                 inputManager.removeDB(&allDatabases);
             }
         }
+        else if (option == 3){ //print
+            for (int i = 0; i < allDatabases.size(); i++){
+                allDatabases.at(i)->printAll();
+            }
+        }
         else if (option == 4){ //exit
             complete = true;
         }
     }
-
-    //this for loops prints all databases and contents 
-    for (int i = 0; i < allDatabases.size(); i++){
-        allDatabases.at(i)->printAll();
-    }
- 
     return 0;
 }

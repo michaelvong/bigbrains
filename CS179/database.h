@@ -28,6 +28,7 @@ public:
     Database(string n){this->name = n; this->filePath = folder+n+"/";}
     void addColl(Collection*);
     void removeColl(int);
+    void updateDB(int);
     void print();
     string getPath() {return this->filePath; }
     Collection* getCollection (int);
@@ -36,12 +37,14 @@ public:
     void printAll();
     void deleteFiles();
     void setName(std::string);
+    void setPath(std::string n) {this->filePath = folder+n+"\\";}
 };
 
 
 //set the name of this collection
 void Database::setName(std::string n){
     this->name = n;
+    //cout << "in setName: " << endl << this->name << endl;
 }
 
 
@@ -55,6 +58,7 @@ void Database::removeColl (int i){
     this->collections.erase(this->collections.begin()+i);
     std::cout << "Sucessfully removed" << std::endl;  
 }
+
 
 //prints the jsons that are in this collection
 void Database::print(){

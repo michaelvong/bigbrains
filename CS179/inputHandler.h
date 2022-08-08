@@ -5,6 +5,8 @@
 #include "collection.h"
 #include <string>
 #include "direct.h" //uncomment this when using windows
+//if on mac, change all "\" to "/" to fix assertion error
+//#include "unistd.h" //use this on MAC
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>
@@ -15,6 +17,7 @@
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/filewritestream.h"
 #include "database.h"
+
 using namespace std;
 using std::filesystem::directory_iterator;
 using namespace rapidjson;
@@ -237,7 +240,8 @@ void InputHandler::removeColl(vector<Database*>* DB){
 
 //updates database
 void InputHandler::updateDB(vector<Database*>* DB){
-    string DBchoose, temp;
+    string DBchoose, tempName;
+    string tempDB;
     cout << "Choose a database: ";
     for (int i = 0; i < DB->size(); i++){
         cout << i << ". " << DB->at(i)->getName() << endl;
@@ -245,13 +249,22 @@ void InputHandler::updateDB(vector<Database*>* DB){
     getline(cin, DBchoose);
 
     cout << "Rename " << DB->at(stoi(DBchoose))->getName() << " to: " <<endl;
-    getline(cin, temp);
+    getline(cin, tempName);
 
-    DB->at(stoi(DBchoose))->setName(temp);
-
+    tempDB = DB->at(stoi(DBchoose))->getPath().c_str();
+    
+    const char* newName = ("STORAGE\\"+tempName).c_str();
+    const char* oldName = tempDB.c_str();
+    DB->at(stoi(DBchoose))->setPath(tempName);
+    cout << "new name: " << newName << endl;
+    cout << "old name: " << oldName << endl;
+    rename(oldName, newName);
+    DB->at(stoi(DBchoose))->setName(tempName);
     cout << "Database name updated!" << endl;
 
-    cout << DB->at(stoi(DBchoose))->getName() << endl;
+
+    //cout << DB->at(stoi(DBchoose))->getName() << endl;
+
     
     // if(mkdir(c) == -1){
     //     //cerr << " Error : " << strerror(errno) << endl; //check which error its giving

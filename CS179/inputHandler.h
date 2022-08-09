@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <filesystem>
+#include <vector>
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -35,6 +36,7 @@ public:
     void removeDB(vector<Database*>*);
     void removeColl(vector<Database*>*);
     void updateDB(vector<Database*>*);
+    void updateColl(vector<Database*>*);
 };
 
 //displays main menu for user and returns chosen option 
@@ -242,7 +244,7 @@ void InputHandler::removeColl(vector<Database*>* DB){
 void InputHandler::updateDB(vector<Database*>* DB){
     string DBchoose, tempName;
     string tempDB;
-    cout << "Choose a database: ";
+    cout << "Choose a database: " << endl;
     for (int i = 0; i < DB->size(); i++){
         cout << i << ". " << DB->at(i)->getName() << endl;
     }
@@ -262,15 +264,45 @@ void InputHandler::updateDB(vector<Database*>* DB){
     DB->at(stoi(DBchoose))->setName(tempName);
     cout << "Database name updated!" << endl;
 
+    //cout << DB->at(stoi(DBchoose))->getName() << endl;
+}
+
+//updates collection
+void InputHandler::updateColl(vector<Database*>* DB){
+    string DBchoose, collChoose;
+    string tempName, tempDB, tempColl, DBname;
+    cout << "Choose a database: " << endl;
+    for (int i = 0; i < DB->size(); i++){
+        cout << i << ". " << DB->at(i)->getName() << endl;
+    }
+    getline(cin, DBchoose);
+
+    cout << "Choose a collection from this database: " << endl;
+    DB->at(stoi(DBchoose))->print(); //assuming DBchoose is int, prints all collections in the chosen DB
+    getline(cin, collChoose);
+
+    cout << "Rename " << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getName() << " to: " <<endl;
+    getline(cin, tempName);
+
+    //puts selected DB and Coll into a temp string
+    tempDB = DB->at(stoi(DBchoose))->getPath().c_str();
+    tempColl = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath().c_str();
+    DBname = DB->at(stoi(DBchoose))->getName();
+
+    cout<< DBname <<endl;
+
+    cout << "tempName: " << tempName << endl;
+
+    //renaming
+    const char* newName = ("STORAGE\\"+DBname+"\\"+tempName).c_str();
+    const char* oldName = tempColl.c_str();
+    DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setPath(DBname+"\\"+tempName);
+    //cout << endl << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath()<< endl;
+    cout << "new name: " << newName << endl;
+    cout << "old name: " << oldName << endl;
+    rename(oldName, newName);
+    DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setName(tempName);
+    cout << "Collection name updated!" << endl;
 
     //cout << DB->at(stoi(DBchoose))->getName() << endl;
-
-    
-    // if(mkdir(c) == -1){
-    //     //cerr << " Error : " << strerror(errno) << endl; //check which error its giving
-    //     cout << "Error in creating database." << endl;
-    // } else {
-    //     DB->push_back(databasePtr);
-    //     cout << "Database created!" << endl;
-    // }
 }

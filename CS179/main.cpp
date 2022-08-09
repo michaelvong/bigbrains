@@ -12,7 +12,6 @@
 #include "rapidjson/filewritestream.h"
 #include <cstdio>
 #include <filesystem>
-#include "document.h"
 #include "inputHandler.h"
 #include "database.h"
 #include "rapidjson/ostreamwrapper.h"

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include "document.h"
 #include "collection.h"
 #include <string>
 #include "direct.h" //uncomment this when using windows

@@ -31,7 +31,7 @@ public:
     Document* getDocAt(int);
     vector<Document*> getDocs() {return this->documents;}
     void setName(std::string);
-    void setPath(std::string n) {this->path = folder+n+"\\";}
+    void setPath(std::string n) {this->path = folder+n;}
 };
 
 

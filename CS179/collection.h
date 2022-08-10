@@ -8,12 +8,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fstream>
+#include <filesystem>
 
 using namespace std;
 using namespace rapidjson;
 
 class Collection{
 private:
+    const std::string folder = "STORAGE\\";
     string name;
     string path;
     vector<Document*> documents;
@@ -25,9 +30,19 @@ public:
     void addDoc(Document*);
     Document* getDocAt(int);
     vector<Document*> getDocs() {return this->documents;}
+    void setName(std::string);
+    void setPath(std::string n) {this->path = folder+n;}
 };
 
+
 Collection::Collection(){}
+
+//set the name of this collection
+void Collection::setName(std::string n){
+    this->name = n;
+    //cout << "in setName: " << endl << this->name << endl;
+}
+
 
 void Collection::addDoc(Document* d){
     this->documents.push_back(d);

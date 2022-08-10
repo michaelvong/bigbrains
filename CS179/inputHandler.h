@@ -99,7 +99,7 @@ void InputHandler::addDB(vector<Database*>* DB){
     temp = databasePtr->getPath();
     const char *c = temp.c_str();
     if(mkdir(c) == -1){
-        //cerr << " Error : " << strerror(errno) << endl; //check which error its giving
+        cerr << " Error : " << strerror(errno) << endl; //check which error its giving
         cout << "Error in creating database." << endl;
     } else {
         DB->push_back(databasePtr);
@@ -257,8 +257,8 @@ void InputHandler::updateDB(vector<Database*>* DB){
     const char* newName = ("STORAGE\\"+tempName).c_str();
     const char* oldName = tempDB.c_str();
     DB->at(stoi(DBchoose))->setPath(tempName);
-    cout << "new name: " << newName << endl;
-    cout << "old name: " << oldName << endl;
+    //cout << "new name: " << newName << endl;
+    //cout << "old name: " << oldName << endl;
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->setName(tempName);
     cout << "Database name updated!" << endl;
@@ -297,8 +297,8 @@ void InputHandler::updateColl(vector<Database*>* DB){
     const char* oldName = tempColl.c_str();
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setPath(DBname+"\\"+tempName);
     //cout << endl << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath()<< endl;
-    cout << "new name: " << newName << endl;
-    cout << "old name: " << oldName << endl;
+    //cout << "new name: " << newName << endl;
+    //cout << "old name: " << oldName << endl;
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setName(tempName);
     cout << "Collection name updated!" << endl;

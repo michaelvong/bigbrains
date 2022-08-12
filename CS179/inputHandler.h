@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <filesystem>
 #include <vector>
 #include "rapidjson/document.h"
@@ -28,6 +30,7 @@ public:
     int displayAddMenu();
     int displaySubMenu();
     int displayUpdateMenu();
+    int displaySearchMenu();
     void addDB(vector<Database*>*);
     void addColl(vector<Database*>*);
     void addDoc(vector<Database*>*);
@@ -36,6 +39,7 @@ public:
     void removeColl(vector<Database*>*);
     void updateDB(vector<Database*>*);
     void updateColl(vector<Database*>*);
+    void searchQuery(vector<Database*>*);
 };
 
 //displays main menu for user and returns chosen option 
@@ -47,8 +51,9 @@ int InputHandler::displayMenu()
 	cout << "1. Add" << endl;
 	cout << "2. Remove" << endl;
 	cout << "3. Update" << endl;
-    cout << "4. Print" << endl;
-    cout << "5. Quit" << endl;
+    cout << "4. Search" << endl;
+    cout << "5. Print" << endl;
+    cout << "6. Quit" << endl;
     getline(cin, str);
     option = stoi(str);
 	return option;
@@ -90,6 +95,7 @@ int InputHandler::displaySubMenu(){
     int option = stoi(temp);
     return option;
 }
+
 //adds database
 void InputHandler::addDB(vector<Database*>* DB){
     string DBname, temp;
@@ -109,7 +115,7 @@ void InputHandler::addDB(vector<Database*>* DB){
 
 //adds empty collection to database
 void InputHandler::addColl(vector<Database*>* DB){
-    string DBchoose, path;
+    string DBchoose, path, temp;
     if (!DB->empty()){
         for (int i = 0; i < DB->size(); i++){
             cout << i << ". " << DB->at(i)->getName() << endl;
@@ -121,19 +127,6 @@ void InputHandler::addColl(vector<Database*>* DB){
         DB->at(stoi(DBchoose))->addColl(collPtr);
         ofstream myFile (collPtr->getPath());
         myFile.close();
-
-        //get the new json, and input "[]" in the file
-        string temp = collPtr->getPath();
-        const char *newPath = temp.c_str();
-        char writeBuffer[65536];
-        FILE* fp = fopen(newPath, "w");
-        Document d;
-        FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
-        Writer<FileWriteStream> writer(os);
-        const char* json = "[]";
-        d.Parse(json);
-        d.Accept(writer);
-        fclose(fp);
     }
 }
 
@@ -151,41 +144,29 @@ void InputHandler::addDoc(vector<Database*>* DB){
         cout << "Enter document: ";
         getline(cin, input);
         const char* json = input.c_str();
-        path = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath();
-        const char *jsonPath = path.c_str();
         Document* d = new Document();
-        Document d2;
-
-        //read in existing data from file, push back new json object
-        FILE* fp = fopen(jsonPath, "r"); // non-Windows use "r"
-        char readBuffer[65536];
-        FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-        d->ParseStream(is);
-        fclose(fp);
-        d2.Parse(json);
-        Value v(d2, d->GetAllocator());
-        d->PushBack(v, d->GetAllocator());
-
-        //rewrite to the file with updated array of json objects
-        char writeBuffer[65536];
-        FILE* fp2 = fopen(jsonPath, "w");
-        FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
-        Writer<FileWriteStream> writer(os);
+        d->Parse(json);
+        StringBuffer buffer;
+        Writer<StringBuffer> writer(buffer);
         d->Accept(writer);
-        fclose(fp2);
-
-        //create a doc* and set data to new inputted json obj
-        //add this new doc* to our collection
-        Document* docPass = new Document();
-        docPass->CopyFrom(d2, docPass->GetAllocator());
-        DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->addDoc(docPass);
+        if (buffer.GetString() != NULL){
+            path = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath();
+            const char *c = path.c_str();
+            FILE* fp = fopen(c, "a");
+            char writeBuffer[65536];
+            FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
+            Writer<FileWriteStream> writer(os);
+            d->Accept(writer);
+            DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->addDoc(d);
+            fclose(fp);
+        } else {
+            cout << "Error in input. No additions made." << endl;
+        }
     } else {
         cout << "No collection to choose from. " << endl;
     }
 }
 
-
-//takes in a reference of vector of database*, populates the vector with data
 void InputHandler::readData(vector<Database*>* DB){
     string path = "STORAGE\\";
     string DBname, collName;
@@ -209,14 +190,7 @@ void InputHandler::readData(vector<Database*>* DB){
             FileReadStream is(fp, readBuffer, sizeof(readBuffer));
             d->ParseStream(is);
             fclose(fp);
-            
-            for (rapidjson::Value::ConstValueIterator itr = d->Begin(); itr != d->End(); ++itr) {
-                const rapidjson::Value& attribute = *itr;
-                assert(attribute.IsObject()); // each attribute is an object
-                Document *t = new Document();
-                t->CopyFrom(attribute, t->GetAllocator());
-                collPtr->addDoc(t);
-            }
+            collPtr->addDoc(d);
         }
     }
 }
@@ -289,9 +263,13 @@ void InputHandler::updateDB(vector<Database*>* DB){
     const char* newName = ("STORAGE\\"+tempName).c_str();
     const char* oldName = tempDB.c_str();
     DB->at(stoi(DBchoose))->setPath(tempName);
+    //cout << "new name: " << newName << endl;
+    //cout << "old name: " << oldName << endl;
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->setName(tempName);
     cout << "Database name updated!" << endl;
+
+    //cout << DB->at(stoi(DBchoose))->getName() << endl;
 }
 
 //updates collection
@@ -324,7 +302,72 @@ void InputHandler::updateColl(vector<Database*>* DB){
     const char* newName = ("STORAGE\\"+DBname+"\\"+tempName).c_str();
     const char* oldName = tempColl.c_str();
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setPath(DBname+"\\"+tempName);
+    //cout << endl << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath()<< endl;
+    //cout << "new name: " << newName << endl;
+    //cout << "old name: " << oldName << endl;
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setName(tempName);
     cout << "Collection name updated!" << endl;
+
+    //cout << DB->at(stoi(DBchoose))->getName() << endl;
+}
+
+
+//Search by {"key":"value"note}
+void InputHandler::searchQuery(vector<Database*>* DB){
+    string DBchoose, collChoose, docChoose;
+    string tempName, tempDB, tempColl, tempDoc;
+    cout << "Choose a database: " << endl;
+    for (int i = 0; i < DB->size(); i++){
+        cout << i << ". " << DB->at(i)->getName() << endl;
+    }
+    getline(cin, DBchoose);
+
+    cout << "Choose a collection from this database: " << endl;
+    DB->at(stoi(DBchoose))->print(); //assuming DBchoose is int, prints all collections in the chosen DB
+    getline(cin, collChoose);
+
+    cout << "Enter Document with form {[\"key\": \"value\"}]" << endl;
+    getline(cin, docChoose);
+
+    //puts selected DB and Coll into a temp string
+    tempDB = DB->at(stoi(DBchoose))->getPath().c_str();
+    tempColl = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath().c_str();
+    //DBname = DB->at(stoi(DBchoose))->getName();
+
+    // cout << endl << tempDB << endl;
+    // cout << tempColl << endl;
+    // cout << docChoose << endl;
+
+    //Parse and Match the given doc with docs in collection
+    //Open Json using fstream
+    fstream fileStream;
+    string line, word;
+    stringstream lineStream(line);
+    vector<stringstream> Docks;
+    int matches(0);
+
+    fileStream.open(tempColl);
+
+    while (!fileStream.eof())
+    {
+        getline(fileStream, line);
+        if(!fileStream || !lineStream){
+            cout << "Error in reading file" << endl;
+        }
+        else{ //Search
+            //cout << "Searching" << endl;
+            //Matching
+            if (line == docChoose)
+            {
+                //output doc;
+                //cout << line << endl;
+                matches++;
+            }
+        }
+    }
+    if (matches == 0)
+        cout << endl << "No Matches within Collection" << endl;
+    else
+        cout << endl << matches << " Matches" << endl;
 }

@@ -59,7 +59,7 @@ int main(){
                 //inputManager.updateDoc(&allDatabases);
             }
             else if (updateOpt == 2){
-                //inputManager.updateColl(&allDatabases);
+                inputManager.updateColl(&allDatabases);
             }
             else if (updateOpt == 3){
                 inputManager.updateDB(&allDatabases);

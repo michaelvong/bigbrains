@@ -109,7 +109,7 @@ void InputHandler::addDB(vector<Database*>* DB){
 
 //adds empty collection to database
 void InputHandler::addColl(vector<Database*>* DB){
-    string DBchoose, path, temp;
+    string DBchoose, path;
     if (!DB->empty()){
         for (int i = 0; i < DB->size(); i++){
             cout << i << ". " << DB->at(i)->getName() << endl;
@@ -121,6 +121,19 @@ void InputHandler::addColl(vector<Database*>* DB){
         DB->at(stoi(DBchoose))->addColl(collPtr);
         ofstream myFile (collPtr->getPath());
         myFile.close();
+
+        //get the new json, and input "[]" in the file
+        string temp = collPtr->getPath();
+        const char *newPath = temp.c_str();
+        char writeBuffer[65536];
+        FILE* fp = fopen(newPath, "w");
+        Document d;
+        FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
+        Writer<FileWriteStream> writer(os);
+        const char* json = "[]";
+        d.Parse(json);
+        d.Accept(writer);
+        fclose(fp);
     }
 }
 
@@ -276,13 +289,9 @@ void InputHandler::updateDB(vector<Database*>* DB){
     const char* newName = ("STORAGE\\"+tempName).c_str();
     const char* oldName = tempDB.c_str();
     DB->at(stoi(DBchoose))->setPath(tempName);
-    //cout << "new name: " << newName << endl;
-    //cout << "old name: " << oldName << endl;
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->setName(tempName);
     cout << "Database name updated!" << endl;
-
-    //cout << DB->at(stoi(DBchoose))->getName() << endl;
 }
 
 //updates collection
@@ -315,12 +324,7 @@ void InputHandler::updateColl(vector<Database*>* DB){
     const char* newName = ("STORAGE\\"+DBname+"\\"+tempName).c_str();
     const char* oldName = tempColl.c_str();
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setPath(DBname+"\\"+tempName);
-    //cout << endl << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath()<< endl;
-    //cout << "new name: " << newName << endl;
-    //cout << "old name: " << oldName << endl;
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setName(tempName);
     cout << "Collection name updated!" << endl;
-
-    //cout << DB->at(stoi(DBchoose))->getName() << endl;
 }

@@ -19,7 +19,7 @@ using namespace std;
 using namespace rapidjson;
 using std::filesystem::directory_iterator;
 
-int main(){
+int main(){ 
     vector<Database*> allDatabases;
     InputHandler inputManager;
 

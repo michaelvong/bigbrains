@@ -43,11 +43,12 @@ void Collection::setName(std::string n){
     //cout << "in setName: " << endl << this->name << endl;
 }
 
-
+// takes in a document* and adds it to vector
 void Collection::addDoc(Document* d){
     this->documents.push_back(d);
 }
 
+// takes in an index, returns the Document* at the index
 Document* Collection::getDocAt(int i){
     return this->documents.at(i);
 }

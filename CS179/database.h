@@ -71,6 +71,7 @@ Collection* Database::getCollection(int i){
     return collections.at(i);
 }
 
+//prints all the collections in database
 void Database::printAll(){
     if (this->collections.size() == 0){
         std::cout << "Database \"" << this->name << "\" is empty." << endl;
@@ -89,6 +90,7 @@ void Database::printAll(){
     }
 }
 
+//removes the files from this database
 void Database::deleteFiles(){
     string temp;
     for (int i = 0; i < this->collections.size(); i++){

@@ -138,29 +138,41 @@ void InputHandler::addDoc(vector<Database*>* DB){
         cout << "Enter document: ";
         getline(cin, input);
         const char* json = input.c_str();
+        path = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath();
+        const char *jsonPath = path.c_str();
         Document* d = new Document();
-        d->Parse(json);
-        StringBuffer buffer;
-        Writer<StringBuffer> writer(buffer);
+        Document d2;
+
+        //read in existing data from file, push back new json object
+        FILE* fp = fopen(jsonPath, "r"); // non-Windows use "r"
+        char readBuffer[65536];
+        FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+        d->ParseStream(is);
+        fclose(fp);
+        d2.Parse(json);
+        Value v(d2, d->GetAllocator());
+        d->PushBack(v, d->GetAllocator());
+
+        //rewrite to the file with updated array of json objects
+        char writeBuffer[65536];
+        FILE* fp2 = fopen(jsonPath, "w");
+        FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
+        Writer<FileWriteStream> writer(os);
         d->Accept(writer);
-        if (buffer.GetString() != NULL){
-            path = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath();
-            const char *c = path.c_str();
-            FILE* fp = fopen(c, "a");
-            char writeBuffer[65536];
-            FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
-            Writer<FileWriteStream> writer(os);
-            d->Accept(writer);
-            DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->addDoc(d);
-            fclose(fp);
-        } else {
-            cout << "Error in input. No additions made." << endl;
-        }
+        fclose(fp2);
+
+        //create a doc* and set data to new inputted json obj
+        //add this new doc* to our collection
+        Document* docPass = new Document();
+        docPass->CopyFrom(d2, docPass->GetAllocator());
+        DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->addDoc(docPass);
     } else {
         cout << "No collection to choose from. " << endl;
     }
 }
 
+
+//takes in a reference of vector of database*, populates the vector with data
 void InputHandler::readData(vector<Database*>* DB){
     string path = "STORAGE\\";
     string DBname, collName;
@@ -184,7 +196,14 @@ void InputHandler::readData(vector<Database*>* DB){
             FileReadStream is(fp, readBuffer, sizeof(readBuffer));
             d->ParseStream(is);
             fclose(fp);
-            collPtr->addDoc(d);
+            
+            for (rapidjson::Value::ConstValueIterator itr = d->Begin(); itr != d->End(); ++itr) {
+                const rapidjson::Value& attribute = *itr;
+                assert(attribute.IsObject()); // each attribute is an object
+                Document *t = new Document();
+                t->CopyFrom(attribute, t->GetAllocator());
+                collPtr->addDoc(t);
+            }
         }
     }
 }

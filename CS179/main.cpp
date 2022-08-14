@@ -19,7 +19,7 @@ using namespace std;
 using namespace rapidjson;
 using std::filesystem::directory_iterator;
 
-int main(){ 
+int main(){
     vector<Database*> allDatabases;
     InputHandler inputManager;
 
@@ -65,7 +65,11 @@ int main(){
                 inputManager.updateDB(&allDatabases);
             }
         }
+<<<<<<< HEAD
         else if (option == 4){ //search
+=======
+        else if (option == 4) { //Search
+>>>>>>> e998a4b6899bdb1e771f536b49571772a8bb8ab5
             inputManager.searchQuery(&allDatabases);
         }
         else if (option == 5){ //print

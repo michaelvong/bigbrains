@@ -312,66 +312,6 @@ void InputHandler::updateColl(vector<Database*>* DB){
     //cout << DB->at(stoi(DBchoose))->getName() << endl;
 }
 
-
-//Search by {"key":"value"note}
-void InputHandler::searchQuery(vector<Database*>* DB){
-    string DBchoose, collChoose, docChoose;
-    string tempName, tempDB, tempColl, tempDoc;
-    cout << "Choose a database: " << endl;
-    for (int i = 0; i < DB->size(); i++){
-        cout << i << ". " << DB->at(i)->getName() << endl;
-    }
-    getline(cin, DBchoose);
-
-    cout << "Choose a collection from this database: " << endl;
-    DB->at(stoi(DBchoose))->print(); //assuming DBchoose is int, prints all collections in the chosen DB
-    getline(cin, collChoose);
-
-    cout << "Enter Document with form {[\"key\": \"value\"}]" << endl;
-    getline(cin, docChoose);
-
-    //puts selected DB and Coll into a temp string
-    tempDB = DB->at(stoi(DBchoose))->getPath().c_str();
-    tempColl = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getPath().c_str();
-    //DBname = DB->at(stoi(DBchoose))->getName();
-
-    // cout << endl << tempDB << endl;
-    // cout << tempColl << endl;
-    // cout << docChoose << endl;
-
-    //Parse and Match the given doc with docs in collection
-    //Open Json using fstream
-    fstream fileStream;
-    string line, word;
-    stringstream lineStream(line);
-    vector<stringstream> Docks;
-    int matches(0);
-
-    fileStream.open(tempColl);
-
-    while (!fileStream.eof())
-    {
-        getline(fileStream, line);
-        if(!fileStream || !lineStream){
-            cout << "Error in reading file" << endl;
-        }
-        else{ //Search
-            //cout << "Searching" << endl;
-            //Matching
-            if (line == docChoose)
-            {
-                //output doc;
-                //cout << line << endl;
-                matches++;
-            }
-        }
-    }
-    if (matches == 0)
-        cout << endl << "No Matches within Collection" << endl;
-    else
-        cout << endl << matches << " Matches" << endl;
-}
-
 void InputHandler::searchQuery(vector<Database*>* DB){
     string DBchoose, collChoose, docInput;
     int count, type, matches=0, results=0;

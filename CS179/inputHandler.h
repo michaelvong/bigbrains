@@ -36,6 +36,7 @@ public:
     void removeColl(vector<Database*>*);
     void updateDB(vector<Database*>*);
     void updateColl(vector<Database*>*);
+    void searchQuery(vector<Database*>*);
 };
 
 //displays main menu for user and returns chosen option 
@@ -47,8 +48,9 @@ int InputHandler::displayMenu()
 	cout << "1. Add" << endl;
 	cout << "2. Remove" << endl;
 	cout << "3. Update" << endl;
-    cout << "4. Print" << endl;
-    cout << "5. Quit" << endl;
+    cout << "4. Query" << endl;
+    cout << "5. Print" << endl;
+    cout << "6. Quit" << endl;
     getline(cin, str);
     option = stoi(str);
 	return option;
@@ -327,4 +329,109 @@ void InputHandler::updateColl(vector<Database*>* DB){
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setName(tempName);
     cout << "Collection name updated!" << endl;
+}
+
+void InputHandler::searchQuery(vector<Database*>* DB){
+    string DBchoose, collChoose, docInput;
+    int count, type, matches=0, results=0;
+    cout << "Choose a database: " << endl;
+    for (int i = 0; i < DB->size(); i++){
+        cout << i << ". " << DB->at(i)->getName() << endl;
+    }
+    getline(cin, DBchoose);
+    if (!DB->at(stoi(DBchoose))->getCollections().empty()){
+        cout << "Choose a collection: " << endl;
+        DB->at(stoi(DBchoose))->print();
+        getline(cin, collChoose);
+        cout << "Enter a document. EX: { \"name\" : \"michael\" }" << endl;
+        getline(cin, docInput);
+        const char *docToC = docInput.c_str();
+        Document d, d2;
+        d.Parse(docToC);
+        count = d.MemberCount(); 
+        Collection* coll = new Collection();
+        coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
+        for (int i = 0; i < coll->getDocs().size(); i++){
+            matches = 0;     
+            d2.CopyFrom(*coll->getDocAt(i), d2.GetAllocator()); //d2 copies current document* data
+            for (Value::ConstMemberIterator iter = d.MemberBegin(); iter != d.MemberEnd(); ++iter){
+                Value& val = d[iter->name.GetString()]; 
+                type = val.GetType();
+                if (d2.HasMember(iter->name.GetString())){ //check if current doc has key member matching input key
+                    Value& val2 = d2[iter->name.GetString()];
+                    if (val.GetType() == val2.GetType()){
+                        switch(type){
+                            case 0:{ //type: null
+                                matches++;
+                                break;
+                            }
+                            case 1:{ //type: false
+                                matches++;
+                                break;
+                            }
+                            case 2:{ //type: true
+                                matches++;
+                            }
+                            case 3:{
+                                break;
+                            }
+                            case 4: {//type: array
+                                bool flag = true;
+                                if (val.Size() == val2.Size()){
+                                    for (int i = 0; i < val2.Size(); i++){
+                                        if (val[i] != val2[i]){
+                                            flag = false;
+                                        }
+                                    }
+                                } else {
+                                    flag = false;
+                                }
+                                if (flag){
+                                    matches++;
+                                }
+                                
+                                break;
+                            }
+                            case 5: { // type: string
+                                string temp1 = iter->value.GetString();
+                                string temp2 = val2.GetString();
+                                if (temp1 == temp2){
+                                    matches++;
+                                }
+                                break;
+                            }
+                            case 6:{ //type: number
+                                if (iter->value.GetDouble() == val2.GetDouble()){
+                                    matches++;
+                                }
+                                break;
+                            }
+                            default: {
+                                cout << "Error in switch" << endl;
+                                break;
+                            }
+                        }
+                    } else {
+                        break; //break out of this loop if key member val type does not match input val type
+                    }
+                } else {
+                    break; //break out of this loop if 
+                }
+            } //end of for loop for inputted members
+            if (matches == count){
+                results++;
+                cout << "Database: " << DB->at(stoi(DBchoose))->getName() << ", Collection: " << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getName();
+                cout << ", Document#" << i << endl;
+                Document temp;
+                StringBuffer buffer;
+                Writer<StringBuffer> writer(buffer);
+                DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getDocAt(i)->Accept(writer);
+                cout << "\t" << buffer.GetString() << endl;
+            }
+        } // end of for loop for documents in the collection
+        cout << "Total Matches Found: " << results << endl;
+
+    } else {
+        cout << "No collections in this database. " << endl;
+    }
 }

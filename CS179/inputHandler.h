@@ -420,8 +420,8 @@ void InputHandler::searchQuery(vector<Database*>* DB){
             } //end of for loop for inputted members
             if (matches == count){
                 results++;
-                cout << "Database: " << DB->at(stoi(DBchoose))->getName() << ", Collection: " << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getName();
-                cout << ", Document#" << i << endl;
+                cout << endl << "Database: " << DB->at(stoi(DBchoose))->getName() << endl <<  "  Collection: " << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getName();
+                cout << endl << "    Document #" << i << endl;
                 Document temp;
                 StringBuffer buffer;
                 Writer<StringBuffer> writer(buffer);

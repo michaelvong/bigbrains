@@ -1,0 +1,11 @@
+[
+    {
+        "name": "mike",
+        "school": "ucr",
+        "gpa": 4,
+        "prefs": {
+            "gym": true,
+            "work": false
+        }
+    }
+]

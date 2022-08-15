@@ -335,7 +335,14 @@ void InputHandler::updateColl(vector<Database*>* DB){
 
 /*
 this function searches a chosen DB and collection, able to search for a key value pair(s),
-to search for nested objects, objects must be typed exact
+to search for nested objects, objects must be typed exactly,
+can query members in an object using '.'
+
+Examples: 
+{ "name" : "michael"}
+{ "name" : "michael", "age" : 21}
+{ "driver" : {"name":"kevin", "age":21}}
+{ "driver.age" : 21 }
 */
 void InputHandler::searchQuery(vector<Database*>* DB){
     string DBchoose, collChoose, docInput, keyName, objName, attName;

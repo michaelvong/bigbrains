@@ -346,7 +346,6 @@ Examples:
 */
 void InputHandler::searchQuery(vector<Database*>* DB){
     string DBchoose, collChoose, docInput, keyName, objName, attName;
-    bool objAttFlag = false;
     int count, type, matches=0, results=0;
     cout << "Choose a database: " << endl;
     for (int i = 0; i < DB->size(); i++){
@@ -366,6 +365,7 @@ void InputHandler::searchQuery(vector<Database*>* DB){
         Collection* coll = new Collection();
         coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
         for (int i = 0; i < coll->getDocs().size(); i++){
+            bool objAttFlag = false;
             matches = 0;     
             d2.CopyFrom(*coll->getDocAt(i), d2.GetAllocator()); //d2 copies current document* data
             for (Value::ConstMemberIterator iter = d.MemberBegin(); iter != d.MemberEnd(); ++iter){

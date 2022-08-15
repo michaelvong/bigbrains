@@ -1,11 +1,46 @@
 [
     {
         "name": "mike",
-        "school": "ucr",
+        "grade": "sophomore",
+        "gender" : "male",
         "gpa": 4,
         "prefs": {
             "gym": true,
-            "work": false
+            "work": false,
+            "array": [
+                1,
+                2
+            ]
+        }
+    },
+    {
+        "name": "john",
+        "gender" : "male",
+        "grade": "freshman",
+        "gpa": 2.5,
+        "prefs": {
+            "gym": false,
+            "work": true
+        }
+    },
+    {
+        "name" : "jessica",
+        "gender" : "female",
+        "grade" : "senior",
+        "gpa" : 4.5,
+        "prefs" : {
+            "gym" : true,
+            "work" : true
+        }
+    },
+    {
+        "name" : "adam",
+        "gender" : "male",
+        "grade" : "junior",
+        "gpa" : 3,
+        "prefs" : {
+            "gym" : false,
+            "work" : false
         }
     }
 ]

@@ -370,13 +370,13 @@ void InputHandler::searchQuery(vector<Database*>* DB){
                     attName = keyName.substr(keyName.find('.')+1, keyName.length()-keyName.find('.'));
                 }
                 if(objAttFlag){
-                    const char *n = objName.c_str();
-                    const char *a = attName.c_str();
-                    if(d2.HasMember(n)){
-                        Value& tempVal = d2[n];
-                        if (tempVal.HasMember(a)){
-                            Value& tempVal2 = tempVal[a];
-                            type = tempVal2.GetType();
+                    const char *objN = objName.c_str();
+                    const char *attN = attName.c_str();
+                    if(d2.HasMember(objN)){
+                        Value& valOfExist = d2[objN]; //this will be an object
+                        if (valOfExist.HasMember(attN)){
+                            Value& valOfMemberInExistObj = valOfExist[attN];
+                            type = valOfMemberInExistObj.GetType();
                             switch(type){
                                 case 0:{
                                     matches++;
@@ -396,9 +396,9 @@ void InputHandler::searchQuery(vector<Database*>* DB){
                                 case 4: {
                                     bool flag = true;
                                     Value& tempArr = d[iter->name.GetString()]; 
-                                    if (tempArr.Size() == tempVal2.Size()){
-                                        for (int i = 0; i < tempVal2.Size(); i++){
-                                            if (tempArr[i] != tempVal2[i]){
+                                    if (tempArr.Size() == valOfMemberInExistObj.Size()){
+                                        for (int i = 0; i < valOfMemberInExistObj.Size(); i++){
+                                            if (tempArr[i] != valOfMemberInExistObj[i]){
                                                 flag = false;
                                             }
                                         }
@@ -412,14 +412,14 @@ void InputHandler::searchQuery(vector<Database*>* DB){
                                 }
                                 case 5:{
                                     string temp1 = iter->value.GetString();
-                                    string temp2 = tempVal2.GetString();
+                                    string temp2 = valOfMemberInExistObj.GetString();
                                     if (temp1 == temp2){
                                         matches++;
                                     }
                                     break;
                                 }
                                 case 6:{
-                                    if (iter->value.GetDouble() == tempVal2.GetDouble()){
+                                    if (iter->value.GetDouble() == valOfMemberInExistObj.GetDouble()){
                                         matches++;
                                     }
                                     break;

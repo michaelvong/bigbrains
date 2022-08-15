@@ -44,7 +44,7 @@ int main(){
         else if (option == 2){
             int remOpt = inputManager.displaySubMenu();
             if (remOpt == 1){
-                //remove doc
+                inputManager.removeDoc(&allDatabases);
             }
             else if (remOpt == 2){
                 inputManager.removeColl(&allDatabases);
@@ -65,11 +65,7 @@ int main(){
                 inputManager.updateDB(&allDatabases);
             }
         }
-<<<<<<< HEAD
         else if (option == 4){ //search
-=======
-        else if (option == 4) { //Search
->>>>>>> e998a4b6899bdb1e771f536b49571772a8bb8ab5
             inputManager.searchQuery(&allDatabases);
         }
         else if (option == 5){ //print

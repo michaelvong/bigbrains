@@ -338,7 +338,8 @@ this function searches a chosen DB and collection, able to search for a key valu
 to search for nested objects, objects must be typed exact
 */
 void InputHandler::searchQuery(vector<Database*>* DB){
-    string DBchoose, collChoose, docInput;
+    string DBchoose, collChoose, docInput, keyName, objName, attName;
+    bool objAttFlag = false;
     int count, type, matches=0, results=0;
     cout << "Choose a database: " << endl;
     for (int i = 0; i < DB->size(); i++){
@@ -361,6 +362,74 @@ void InputHandler::searchQuery(vector<Database*>* DB){
             matches = 0;     
             d2.CopyFrom(*coll->getDocAt(i), d2.GetAllocator()); //d2 copies current document* data
             for (Value::ConstMemberIterator iter = d.MemberBegin(); iter != d.MemberEnd(); ++iter){
+                //if key value has '.' in it
+                keyName = iter->name.GetString();
+                if(keyName.find('.') < keyName.length()){
+                    objAttFlag = true;
+                    objName = keyName.substr(0, keyName.find('.'));
+                    attName = keyName.substr(keyName.find('.')+1, keyName.length()-keyName.find('.'));
+                }
+                if(objAttFlag){
+                    const char *n = objName.c_str();
+                    const char *a = attName.c_str();
+                    if(d2.HasMember(n)){
+                        Value& tempVal = d2[n];
+                        if (tempVal.HasMember(a)){
+                            Value& tempVal2 = tempVal[a];
+                            type = tempVal2.GetType();
+                            switch(type){
+                                case 0:{
+                                    matches++;
+                                    break;
+                                }
+                                case 1:{
+                                    matches++;
+                                    break;
+                                }
+                                case 2:{
+                                    matches++;
+                                    break;
+                                }
+                                case 3: {
+                                    break;
+                                }
+                                case 4: {
+                                    bool flag = true;
+                                    Value& tempArr = d[iter->name.GetString()]; 
+                                    if (tempArr.Size() == tempVal2.Size()){
+                                        for (int i = 0; i < tempVal2.Size(); i++){
+                                            if (tempArr[i] != tempVal2[i]){
+                                                flag = false;
+                                            }
+                                        }
+                                    } else {
+                                        flag = false;
+                                    }
+                                    if (flag){
+                                        matches++;
+                                    }
+                                    break;
+                                }
+                                case 5:{
+                                    string temp1 = iter->value.GetString();
+                                    string temp2 = tempVal2.GetString();
+                                    if (temp1 == temp2){
+                                        matches++;
+                                    }
+                                    break;
+                                }
+                                case 6:{
+                                    if (iter->value.GetDouble() == tempVal2.GetDouble()){
+                                        matches++;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //keymember has no '.'
                 Value& val = d[iter->name.GetString()]; 
                 type = val.GetType();
                 if (d2.HasMember(iter->name.GetString())){ //check if current doc has key member matching input key

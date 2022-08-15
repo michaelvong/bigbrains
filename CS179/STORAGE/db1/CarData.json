@@ -1,0 +1,47 @@
+[
+    {
+        "car": "lexus",
+        "color": "gray",
+        "new": false,
+        "driver": {
+            "name": "tiffany",
+            "age": 18
+        }
+    },
+    {
+        "car": "honda",
+        "color": "gray",
+        "new": false,
+        "driver": {
+            "name": "kevin",
+            "age": 21
+        }
+    },
+    {
+        "car": "toyota",
+        "color": "white",
+        "new": true,
+        "driver": {
+            "name": "george",
+            "age": 21
+        }
+    },
+    {
+        "car": "mercedes",
+        "color": "black",
+        "new": false,
+        "driver": {
+            "name": "mike",
+            "age": 18
+        }
+    },
+    {
+        "car": "honda",
+        "color": "white",
+        "new": false,
+        "driver": {
+            "name": "kim",
+            "age": 21
+        }
+    }
+]

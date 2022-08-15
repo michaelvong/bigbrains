@@ -16,6 +16,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
 #include "database.h"
 
 using namespace std;
@@ -132,7 +133,7 @@ void InputHandler::addColl(vector<Database*>* DB){
         FILE* fp = fopen(newPath, "w");
         Document d;
         FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
-        Writer<FileWriteStream> writer(os);
+        PrettyWriter<FileWriteStream> writer(os);
         const char* json = "[]";
         d.Parse(json);
         d.Accept(writer);
@@ -173,7 +174,7 @@ void InputHandler::addDoc(vector<Database*>* DB){
         char writeBuffer[65536];
         FILE* fp2 = fopen(jsonPath, "w");
         FileWriteStream os(fp2, writeBuffer, sizeof(writeBuffer));
-        Writer<FileWriteStream> writer(os);
+        PrettyWriter<FileWriteStream> writer(os);
         d->Accept(writer);
         fclose(fp2);
 
@@ -332,6 +333,10 @@ void InputHandler::updateColl(vector<Database*>* DB){
     cout << "Collection name updated!" << endl;
 }
 
+/*
+this function searches a chosen DB and collection, able to search for a key value pair(s),
+to search for nested objects, objects must be typed exact
+*/
 void InputHandler::searchQuery(vector<Database*>* DB){
     string DBchoose, collChoose, docInput;
     int count, type, matches=0, results=0;
@@ -372,8 +377,79 @@ void InputHandler::searchQuery(vector<Database*>* DB){
                             }
                             case 2:{ //type: true
                                 matches++;
+                                break;
                             }
-                            case 3:{
+                            case 3:{ //type: object
+                                string inputTemp, docTemp;
+                                int typeTemp;
+                                count = val.MemberCount();
+                                Value::ConstMemberIterator docItr = val2.MemberBegin();
+                                for (Value::ConstMemberIterator inputItr = val.MemberBegin(); inputItr != val.MemberEnd(); ++inputItr) {   //iterate through object
+                                    inputTemp = inputItr->name.GetString();
+                                    docTemp = docItr->name.GetString();
+                                    if(inputTemp == docTemp){ //if key names match
+                                        Value& inputVal = val[inputItr->name.GetString()];
+                                        Value& docVal = val2[docItr->name.GetString()];
+                                        if (inputVal.GetType() == docVal.GetType()){
+                                            typeTemp = inputVal.GetType();
+                                            switch(typeTemp){
+                                                case 0: {//type:null
+                                                    matches++;
+                                                    break;
+                                                }
+                                                case 1: { //type: false
+                                                    matches++;
+                                                    break;
+                                                }
+                                                case 2: { //type: true
+                                                    matches++;
+                                                    break;
+                                                }
+                                                case 3: { //type: object
+                                                    break;
+                                                }
+                                                case 4: { //type: array
+                                                    bool flag = true;
+                                                    if (inputVal.Size() == docVal.Size()){
+                                                        for (int i = 0; i < docVal.Size(); i++){
+                                                            if (inputVal[i] != docVal[i]){
+                                                                flag = false;
+                                                            }
+                                                        }
+                                                    } else {
+                                                        flag = false;
+                                                    }
+                                                    if (flag){
+                                                        matches++;
+                                                    }
+                                                    break;
+                                                }
+                                                case 5: {//type: string
+                                                    string temp1 = inputItr->value.GetString();
+                                                    string temp2 = docItr->value.GetString();
+                                                    if (temp1 == temp2){
+                                                        matches++;
+                                                    }
+                                                    break;
+                                                }
+                                                case 6:{ //type: number
+                                                    if (inputItr->value.GetDouble() == docItr->value.GetDouble()){
+                                                        matches++;
+                                                    }
+                                                    break;
+                                                }
+                                                default:{
+                                                    break;
+                                                }
+                                            } //end switch
+                                        } else{ // else if val types !match break loop
+                                            break;
+                                        }
+                                    } else { // else if key names !match break loop
+                                        break;
+                                    }
+                                    docItr++;
+                                }
                                 break;
                             }
                             case 4: {//type: array

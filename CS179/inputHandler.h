@@ -3,9 +3,9 @@
 #include <iostream>
 #include "collection.h"
 #include <string>
-#include "direct.h" //uncomment this when using windows
+//#include "direct.h" //uncomment this when using windows
 //if on mac, change all "\" to "/" to fix assertion error
-//#include "unistd.h" //use this on MAC
+#include "unistd.h" //use this on MAC
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>
@@ -102,7 +102,7 @@ void InputHandler::addDB(vector<Database*>* DB){
     Database *databasePtr = new Database(DBname);
     temp = databasePtr->getPath();
     const char *c = temp.c_str();
-    if(mkdir(c) == -1){
+    if(mkdir(c, 0770) == -1){
         cerr << " Error : " << strerror(errno) << endl; //check which error its giving
         cout << "Error in creating database." << endl;
     } else {
@@ -191,18 +191,18 @@ void InputHandler::addDoc(vector<Database*>* DB){
 
 //takes in a reference of vector of database*, populates the vector with data
 void InputHandler::readData(vector<Database*>* DB){
-    string path = "STORAGE\\";
+    string path = "STORAGE/";
     string DBname, collName;
     string path2, path3;
     for (const auto & file : directory_iterator(path)){
         path2 = file.path().string(); // STORAGE\Database1
-        DBname = path2.substr(path2.find("\\")+1, path2.length()-path2.find("\\"));
+        DBname = path2.substr(path2.find("/")+1, path2.length()-path2.find("/"));
         Database* databasePtr = new Database(DBname);
         DB->push_back(databasePtr);
         for (const auto & file: directory_iterator(path2)){
             path3 = file.path().string(); //STORAGE\Database1\sample1.json
-            string temp = path3.substr(path3.find("\\")+1, path3.length()-path3.find("\\")); 
-            collName = temp.substr(temp.find("\\")+1, temp.length()-temp.find("\\")); 
+            string temp = path3.substr(path3.find("/")+1, path3.length()-path3.find("/")); 
+            collName = temp.substr(temp.find("/")+1, temp.length()-temp.find("/")); 
             Collection* collPtr = new Collection(collName, DB->back()->getPath());
             DB->back()->addColl(collPtr);
             string temp2 = collPtr->getPath();
@@ -290,12 +290,14 @@ void InputHandler::updateDB(vector<Database*>* DB){
 
     tempDB = DB->at(stoi(DBchoose))->getPath().c_str();
     
-    const char* newName = ("STORAGE\\"+tempName).c_str();
+    const char* newName = ("STORAGE//"+tempName).c_str();
     const char* oldName = tempDB.c_str();
     DB->at(stoi(DBchoose))->setPath(tempName);
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->setName(tempName);
     cout << "Database name updated!" << endl;
+    
+
 }
 
 //updates collection
@@ -325,12 +327,14 @@ void InputHandler::updateColl(vector<Database*>* DB){
     cout << "tempName: " << tempName << endl;
 
     //renaming
-    const char* newName = ("STORAGE\\"+DBname+"\\"+tempName).c_str();
+    const char* newName = ("STORAGE//"+DBname+"//"+tempName).c_str();
     const char* oldName = tempColl.c_str();
-    DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setPath(DBname+"\\"+tempName);
+    DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setPath(DBname+"/"+tempName);
     rename(oldName, newName);
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setName(tempName);
     cout << "Collection name updated!" << endl;
+    cout << "Number of Docs" << endl; 
+    cout <<  DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getNumOfDocuments(); 
 }
 
 /*
@@ -352,18 +356,25 @@ void InputHandler::searchQuery(vector<Database*>* DB){
         cout << i << ". " << DB->at(i)->getName() << endl;
     }
     getline(cin, DBchoose);
+    
+    //Checking if the Collection is empty 
     if (!DB->at(stoi(DBchoose))->getCollections().empty()){
         cout << "Choose a collection: " << endl;
         DB->at(stoi(DBchoose))->print();
         getline(cin, collChoose);
         cout << "Enter a document. EX: { \"name\" : \"michael\" }" << endl;
         getline(cin, docInput);
+       
+        //Converting user input to c string 
         const char *docToC = docInput.c_str();
         Document d, d2;
+        
+    
         d.Parse(docToC);
         count = d.MemberCount(); 
         Collection* coll = new Collection();
         coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
+        
         for (int i = 0; i < coll->getDocs().size(); i++){
             bool objAttFlag = false;
             matches = 0;     

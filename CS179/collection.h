@@ -32,6 +32,7 @@ public:
     vector<Document*> getDocs() {return this->documents;}
     void setName(std::string);
     void setPath(std::string n) {this->path = folder+n;}
+    int getNumOfDocuments(); 
 };
 
 
@@ -51,4 +52,8 @@ void Collection::addDoc(Document* d){
 // takes in an index, returns the Document* at the index
 Document* Collection::getDocAt(int i){
     return this->documents.at(i);
+}
+int Collection::getNumOfDocuments(){
+  int size = this->documents.size(); 
+  return size;  
 }

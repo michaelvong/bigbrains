@@ -24,7 +24,6 @@ int main(){
     InputHandler inputManager;
 
     inputManager.readData(&allDatabases);
-    
     bool complete = false;
 	while (!complete)
 	{
@@ -74,6 +73,9 @@ int main(){
             }
         }
         else if (option == 6){
+            inputManager.searchQueryThreaded(&allDatabases);
+        }
+        else if (option == 7){
             complete = true;
         }
     }

@@ -3,14 +3,17 @@
 #include <iostream>
 #include "collection.h"
 #include <string>
-//#include "direct.h" //uncomment this when using windows
+#include "direct.h" //uncomment this when using windows
 //if on mac, change all "\" to "/" to fix assertion error
-#include "unistd.h" //use this on MAC
+//#include "unistd.h" //use this on MAC
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>
 #include <filesystem>
 #include <vector>
+#include <chrono>
+#include <thread>
+#include <mutex>
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -22,6 +25,7 @@
 using namespace std;
 using std::filesystem::directory_iterator;
 using namespace rapidjson;
+using namespace std::chrono;
 
 class InputHandler{
 public:
@@ -38,7 +42,9 @@ public:
     void removeDoc(vector<Database*>*);
     void updateDB(vector<Database*>*);
     void updateColl(vector<Database*>*);
-    void searchQuery(vector<Database*>* DB, string collChoose,string docInput ,string DBchoose,Collection *coll);
+    void searchQuery(vector<Database*>*);
+    void searchQueryThreaded(vector<Database*>*);
+    void searchT(int, int, Collection*, Document*, int&, int);
 };
 
 //displays main menu for user and returns chosen option 
@@ -52,7 +58,8 @@ int InputHandler::displayMenu()
 	cout << "3. Update" << endl;
     cout << "4. Query" << endl;
     cout << "5. Print" << endl;
-    cout << "6. Quit" << endl;
+    cout << "6. Query Threaded" << endl;
+    cout << "7. Quit" << endl;
     getline(cin, str);
     option = stoi(str);
 	return option;
@@ -102,7 +109,7 @@ void InputHandler::addDB(vector<Database*>* DB){
     Database *databasePtr = new Database(DBname);
     temp = databasePtr->getPath();
     const char *c = temp.c_str();
-    if(mkdir(c, 0770) == -1){
+    if(mkdir(c) == -1){
         cerr << " Error : " << strerror(errno) << endl; //check which error its giving
         cout << "Error in creating database." << endl;
     } else {
@@ -191,18 +198,18 @@ void InputHandler::addDoc(vector<Database*>* DB){
 
 //takes in a reference of vector of database*, populates the vector with data
 void InputHandler::readData(vector<Database*>* DB){
-    string path = "STORAGE/";
+    string path = "STORAGE\\";
     string DBname, collName;
     string path2, path3;
     for (const auto & file : directory_iterator(path)){
         path2 = file.path().string(); // STORAGE\Database1
-        DBname = path2.substr(path2.find("/")+1, path2.length()-path2.find("/"));
+        DBname = path2.substr(path2.find("\\")+1, path2.length()-path2.find("/"));
         Database* databasePtr = new Database(DBname);
         DB->push_back(databasePtr);
         for (const auto & file: directory_iterator(path2)){
             path3 = file.path().string(); //STORAGE\Database1\sample1.json
-            string temp = path3.substr(path3.find("/")+1, path3.length()-path3.find("/")); 
-            collName = temp.substr(temp.find("/")+1, temp.length()-temp.find("/")); 
+            string temp = path3.substr(path3.find("\\")+1, path3.length()-path3.find("\\")); 
+            collName = temp.substr(temp.find("\\")+1, temp.length()-temp.find("\\")); 
             Collection* collPtr = new Collection(collName, DB->back()->getPath());
             DB->back()->addColl(collPtr);
             string temp2 = collPtr->getPath();
@@ -290,7 +297,7 @@ void InputHandler::updateDB(vector<Database*>* DB){
 
     tempDB = DB->at(stoi(DBchoose))->getPath().c_str();
     
-    const char* newName = ("STORAGE//"+tempName).c_str();
+    const char* newName = ("STORAGE\\"+tempName).c_str();
     const char* oldName = tempDB.c_str();
     DB->at(stoi(DBchoose))->setPath(tempName);
     rename(oldName, newName);
@@ -327,7 +334,7 @@ void InputHandler::updateColl(vector<Database*>* DB){
     cout << "tempName: " << tempName << endl;
 
     //renaming
-    const char* newName = ("STORAGE//"+DBname+"//"+tempName).c_str();
+    const char* newName = ("STORAGE\\"+DBname+"\\"+tempName).c_str();
     const char* oldName = tempColl.c_str();
     DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->setPath(DBname+"/"+tempName);
     rename(oldName, newName);
@@ -351,14 +358,44 @@ Examples:
 void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string docInput ,string DBchoose,Collection *coll){
     string  keyName, objName, attName;
     int count, type, matches=0, results=0;
-    Document d, d2;
-        
-    const char *docToC = docInput.c_str(); 
-    d.Parse(docToC);
-    count = d.MemberCount(); 
-    
-    
+    cout << "Choose a database: " << endl;
+    for (int i = 0; i < DB->size(); i++){
+        cout << i << ". " << DB->at(i)->getName() << endl;
+    }
+    getline(cin, DBchoose);
+    try {
+        DB->at(stoi(DBchoose))->getCollections();
+    } catch (exception e){
+        cout << "Error in selection. " << endl;
+        return;
+    }
     //Checking if the Collection is empty 
+    if (!DB->at(stoi(DBchoose))->getCollections().empty()){
+        cout << "Choose a collection: " << endl;
+        DB->at(stoi(DBchoose))->print();
+        Collection* coll = new Collection();
+        getline(cin, collChoose);
+        try {
+            coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
+        } catch (exception e){
+            cout << "Error in selection." << endl;
+            return;
+        }
+        cout << "Enter a document. EX: { \"name\" : \"michael\" }" << endl;
+        getline(cin, docInput);
+       
+        //Converting user input to c string 
+        auto start = high_resolution_clock::now();
+        const char *docToC = docInput.c_str();
+        Document d, d2;
+    
+        ParseResult inputParse = d.Parse(docToC);
+        if (!inputParse){
+            cout << "Error in input." << endl;
+            return;
+        }
+        count = d.MemberCount(); 
+        coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
         
         for (int i = 0; i < coll->getDocs().size(); i++){
             bool objAttFlag = false;
@@ -433,154 +470,161 @@ void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string d
                 }
 
                 //keymember has no '.'
-                Value& val = d[iter->name.GetString()]; 
-                type = val.GetType();
-                if (d2.HasMember(iter->name.GetString())){ //check if current doc has key member matching input key
-                    Value& val2 = d2[iter->name.GetString()];
-                    if (val.GetType() == val2.GetType()){
-                        switch(type){
-                            case 0:{ //type: null
-                                matches++;
-                                break;
-                            }
-                            case 1:{ //type: false
-                                matches++;
-                                break;
-                            }
-                            case 2:{ //type: true
-                                matches++;
-                                break;
-                            }
-                            case 3:{ //type: object
-                                string inputTemp, docTemp;
-                                int typeTemp;
-                                count = val.MemberCount();
-                                Value::ConstMemberIterator docItr = val2.MemberBegin();
-                                for (Value::ConstMemberIterator inputItr = val.MemberBegin(); inputItr != val.MemberEnd(); ++inputItr) {   //iterate through object
-                                    inputTemp = inputItr->name.GetString();
-                                    docTemp = docItr->name.GetString();
-                                    if(inputTemp == docTemp){ //if key names match
-                                        Value& inputVal = val[inputItr->name.GetString()];
-                                        Value& docVal = val2[docItr->name.GetString()];
-                                        if (inputVal.GetType() == docVal.GetType()){
-                                            typeTemp = inputVal.GetType();
-                                            switch(typeTemp){
-                                                case 0: {//type:null
-                                                    matches++;
-                                                    break;
-                                                }
-                                                case 1: { //type: false
-                                                    matches++;
-                                                    break;
-                                                }
-                                                case 2: { //type: true
-                                                    matches++;
-                                                    break;
-                                                }
-                                                case 3: { //type: object
-                                                    break;
-                                                }
-                                                case 4: { //type: array
-                                                    bool flag = true;
-                                                    if (inputVal.Size() == docVal.Size()){
-                                                        for (int i = 0; i < docVal.Size(); i++){
-                                                            if (inputVal[i] != docVal[i]){
-                                                                flag = false;
+                if (!objAttFlag){
+                    Value& val = d[iter->name.GetString()]; 
+                    type = val.GetType();
+                    if (d2.HasMember(iter->name.GetString())){ //check if current doc has key member matching input key
+                        Value& val2 = d2[iter->name.GetString()];
+                        if (val.GetType() == val2.GetType()){
+                            switch(type){
+                                case 0:{ //type: null
+                                    matches++;
+                                    break;
+                                }
+                                case 1:{ //type: false
+                                    matches++;
+                                    break;
+                                }
+                                case 2:{ //type: true
+                                    matches++;
+                                    break;
+                                }
+                                case 3:{ //type: object
+                                    string inputTemp, docTemp;
+                                    int typeTemp;
+                                    count = val.MemberCount();
+                                    Value::ConstMemberIterator docItr = val2.MemberBegin();
+                                    for (Value::ConstMemberIterator inputItr = val.MemberBegin(); inputItr != val.MemberEnd(); ++inputItr) {   //iterate through object
+                                        inputTemp = inputItr->name.GetString();
+                                        docTemp = docItr->name.GetString();
+                                        if(inputTemp == docTemp){ //if key names match
+                                            Value& inputVal = val[inputItr->name.GetString()];
+                                            Value& docVal = val2[docItr->name.GetString()];
+                                            if (inputVal.GetType() == docVal.GetType()){
+                                                typeTemp = inputVal.GetType();
+                                                switch(typeTemp){
+                                                    case 0: {//type:null
+                                                        matches++;
+                                                        break;
+                                                    }
+                                                    case 1: { //type: false
+                                                        matches++;
+                                                        break;
+                                                    }
+                                                    case 2: { //type: true
+                                                        matches++;
+                                                        break;
+                                                    }
+                                                    case 3: { //type: object
+                                                        break;
+                                                    }
+                                                    case 4: { //type: array
+                                                        bool flag = true;
+                                                        if (inputVal.Size() == docVal.Size()){
+                                                            for (int i = 0; i < docVal.Size(); i++){
+                                                                if (inputVal[i] != docVal[i]){
+                                                                    flag = false;
+                                                                }
                                                             }
+                                                        } else {
+                                                            flag = false;
                                                         }
-                                                    } else {
-                                                        flag = false;
+                                                        if (flag){
+                                                            matches++;
+                                                        }
+                                                        break;
                                                     }
-                                                    if (flag){
-                                                        matches++;
+                                                    case 5: {//type: string
+                                                        string temp1 = inputItr->value.GetString();
+                                                        string temp2 = docItr->value.GetString();
+                                                        if (temp1 == temp2){
+                                                            matches++;
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
-                                                }
-                                                case 5: {//type: string
-                                                    string temp1 = inputItr->value.GetString();
-                                                    string temp2 = docItr->value.GetString();
-                                                    if (temp1 == temp2){
-                                                        matches++;
+                                                    case 6:{ //type: number
+                                                        if (inputItr->value.GetDouble() == docItr->value.GetDouble()){
+                                                            matches++;
+                                                        }
+                                                        break;
                                                     }
-                                                    break;
-                                                }
-                                                case 6:{ //type: number
-                                                    if (inputItr->value.GetDouble() == docItr->value.GetDouble()){
-                                                        matches++;
+                                                    default:{
+                                                        break;
                                                     }
-                                                    break;
-                                                }
-                                                default:{
-                                                    break;
-                                                }
-                                            } //end switch
-                                        } else{ // else if val types !match break loop
+                                                } //end switch
+                                            } else{ // else if val types !match break loop
+                                                break;
+                                            }
+                                        } else { // else if key names !match break loop
                                             break;
                                         }
-                                    } else { // else if key names !match break loop
-                                        break;
+                                        docItr++;
                                     }
-                                    docItr++;
+                                    break;
                                 }
-                                break;
-                            }
-                            case 4: {//type: array
-                                bool flag = true;
-                                if (val.Size() == val2.Size()){
-                                    for (int i = 0; i < val2.Size(); i++){
-                                        if (val[i] != val2[i]){
-                                            flag = false;
+                                case 4: {//type: array
+                                    bool flag = true;
+                                    if (val.Size() == val2.Size()){
+                                        for (int i = 0; i < val2.Size(); i++){
+                                            if (val[i] != val2[i]){
+                                                flag = false;
+                                            }
                                         }
+                                    } else {
+                                        flag = false;
                                     }
-                                } else {
-                                    flag = false;
+                                    if (flag){
+                                        matches++;
+                                    }
+                                    
+                                    break;
                                 }
-                                if (flag){
-                                    matches++;
+                                case 5: { // type: string
+                                    string temp1 = iter->value.GetString();
+                                    string temp2 = val2.GetString();
+                                    if (temp1 == temp2){
+                                        matches++;
+                                    }
+                                    break;
                                 }
-                                
-                                break;
-                            }
-                            case 5: { // type: string
-                                string temp1 = iter->value.GetString();
-                                string temp2 = val2.GetString();
-                                if (temp1 == temp2){
-                                    matches++;
+                                case 6:{ //type: number
+                                    if (iter->value.GetDouble() == val2.GetDouble()){
+                                        matches++;
+                                    }
+                                    break;
                                 }
-                                break;
-                            }
-                            case 6:{ //type: number
-                                if (iter->value.GetDouble() == val2.GetDouble()){
-                                    matches++;
+                                default: {
+                                    cout << "Error in switch" << endl;
+                                    break;
                                 }
-                                break;
                             }
-                            default: {
-                                cout << "Error in switch" << endl;
-                                break;
-                            }
+                        } else {
+                            break; //break out of this loop if key member val type does not match input val type
                         }
                     } else {
-                        break; //break out of this loop if key member val type does not match input val type
+                        break; //break out of this loop if 
                     }
-                } else {
-                    break; //break out of this loop if 
                 }
             } //end of for loop for inputted members
             if (matches == count){
                 results++;
-                cout << endl << "Database: " << DB->at(stoi(DBchoose))->getName() << endl <<  "  Collection: " << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getName();
-                cout << endl << "    Document #" << i << endl;
+                //removed cout statements to demo multithreading
+                //cout << endl << "Database: " << DB->at(stoi(DBchoose))->getName() << endl <<  "  Collection: " << DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getName();
+                //cout << endl << "    Document #" << i << endl;
                 Document temp;
                 StringBuffer buffer;
                 Writer<StringBuffer> writer(buffer);
                 DB->at(stoi(DBchoose))->getCollection(stoi(collChoose))->getDocAt(i)->Accept(writer);
-                cout << "\t" << buffer.GetString() << endl;
+                //cout << "\t" << buffer.GetString() << endl;
             }
         } // end of for loop for documents in the collection
         cout << "Total Matches Found: " << results << endl;
-        
-     
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+        cout << "Time taken to search: "<< duration.count() << " microseconds" << endl;
+    } else {
+        cout << "No collections in this database. " << endl;
+    }
 }
 
 void InputHandler::removeDoc(vector<Database*>* DB){
@@ -611,4 +655,315 @@ void InputHandler::removeDoc(vector<Database*>* DB){
     // Writer<StringBuffer> writer(buffer);
     // this->collections.at(i)->getDocAt(j)->Accept(writer);
     // cout << "\t" << buffer.GetString() << endl;
+}
+
+//helper search function for searchQueryThreaded
+//params are start and end index of documents to search,
+//collection* to the collection being searched,
+//doc* to the doc inputted for comparison
+//ref to total results to store num of results
+void InputHandler::searchT(int start, int end, Collection* coll, Document* d, int &totalRes, int threadID){
+    cout << "Thread " << threadID << " searching documents " << start << " to " << end << "." << endl;
+    string keyName, objName, attName;
+    int matches, type, results=0;
+    Document inputDoc;
+    inputDoc.CopyFrom(*d, inputDoc.GetAllocator());
+    int count = inputDoc.MemberCount();
+    Document docCopy;
+    
+    for (int i = start; i <= end; i++){
+        bool objAttFlag = false;
+        matches = 0;
+        docCopy.CopyFrom(*coll->getDocAt(i), docCopy.GetAllocator());
+        for (Value::ConstMemberIterator iter = inputDoc.MemberBegin(); iter != inputDoc.MemberEnd(); ++iter){
+            //if key value has '.' in it
+            keyName = iter->name.GetString();
+            if(keyName.find('.') < keyName.length()){
+                objAttFlag = true;
+                objName = keyName.substr(0, keyName.find('.'));
+                attName = keyName.substr(keyName.find('.')+1, keyName.length()-keyName.find('.'));
+            }
+            if (objAttFlag){
+                const char *objN = objName.c_str();
+                const char *attN = attName.c_str();
+                if (docCopy.HasMember(objN)){
+                    Value& valOfExist = docCopy[objN];
+                    if (valOfExist.HasMember(attN)){
+                        Value& valOfMemberInExistObj = valOfExist[attN];
+                        type = valOfMemberInExistObj.GetType();
+                        switch(type){
+                            case 0: {
+                                matches++;
+                                break;
+                            }
+                            case 1: {
+                                matches++;
+                                break;
+                            }
+                            case 2: {
+                                matches++;
+                                break;
+                            }
+                            case 3: {
+                                matches++;
+                                break;
+                            }
+                            case 4: {
+                                bool flag = true;
+                                Value& tempArr = inputDoc[iter->name.GetString()];
+                                if (tempArr.Size() == valOfMemberInExistObj.Size()){
+                                    for (int i = 0; i < valOfMemberInExistObj.Size(); i++){
+                                        if (tempArr[i] != valOfMemberInExistObj[i]){
+                                            flag = false;
+                                        }
+                                    }
+                                } else {
+                                    flag = false;
+                                }
+                                if (flag){
+                                    matches++;
+                                }
+                                break;
+                            }
+                            case 5: {
+                                string temp1 = iter->value.GetString();
+                                string temp2 = valOfMemberInExistObj.GetString();
+                                if (temp1 == temp2){
+                                    matches++;
+                                }
+                                break;
+                            }
+                            case 6: {
+                                if (iter->value.GetDouble() == valOfMemberInExistObj.GetDouble()){
+                                    matches++;
+                                }
+                                break;
+                            }
+                        } //end switch
+                    }
+                }
+            } // end objAttFlag
+
+            //keymember has no '.'
+            if (!objAttFlag){
+                Value& val = inputDoc[iter->name.GetString()];
+                type = val.GetType();
+                if (docCopy.HasMember(iter->name.GetString())){
+                    Value& valCopy = docCopy[iter->name.GetString()];
+                    if(val.GetType() == valCopy.GetType()){
+                        switch(type){
+                            case 0: {
+                                matches++;
+                                break;
+                            }
+                            case 1: {
+                                matches++;
+                                break;
+                            }
+                            case 2: {
+                                matches++;
+                                break;
+                            }
+                            case 3: {
+                                string inputTemp, docTemp;
+                                int typeTemp;
+                                count = val.MemberCount();
+                                Value::ConstMemberIterator docItr = valCopy.MemberBegin();
+                                for (Value::ConstMemberIterator inputItr = val.MemberBegin(); inputItr != val.MemberEnd(); ++inputItr) {   //iterate through object
+                                    inputTemp = inputItr->name.GetString();
+                                    docTemp = docItr ->name.GetString();
+                                    if (inputTemp == docTemp) {
+                                        Value& inputVal = val[inputItr->name.GetString()];
+                                        Value& docVal = valCopy[docItr->name.GetString()];
+                                        if(inputVal.GetType() == docVal.GetType()){
+                                            typeTemp = inputVal.GetType();
+                                            switch(typeTemp){
+                                                case 0: {//type:null
+                                                        matches++;
+                                                        break;
+                                                }
+                                                case 1: { //type: false
+                                                    matches++;
+                                                    break;
+                                                }
+                                                case 2: { //type: true
+                                                    matches++;
+                                                    break;
+                                                }
+                                                case 3: { //type: object
+                                                    break;
+                                                }
+                                                case 4: {
+                                                    bool flag = true;
+                                                    if (inputVal.Size() == docVal.Size()){
+                                                        for (int i = 0; i < docVal.Size(); i++){
+                                                            if (inputVal[i] != docVal[i]){
+                                                                flag = false;
+                                                            }
+                                                        }
+                                                    } else {
+                                                        flag = false;
+                                                    }
+                                                    if (flag){
+                                                        matches++;
+                                                    }
+                                                    break;
+                                                }
+                                                case 5: {
+                                                    cout << "IN CASE 5" << endl;
+                                                    string temp1 = inputItr->value.GetString();
+                                                    string temp2 = docItr->value.GetString();
+                                                    if (temp1 == temp2){
+                                                        matches++;
+                                                    }
+                                                    break;
+                                                }
+                                                case 6: {
+                                                    if (inputItr->value.GetDouble() == docItr->value.GetDouble()){
+                                                        matches++;
+                                                    }
+                                                    break;
+                                                }
+                                                default:{
+                                                    break;
+                                                }
+                                            } //end switch
+                                        } else { // else if val types !match
+                                            break;
+                                        }
+                                    } else { // else if key names ! match
+                                        break;
+                                    }
+                                    docItr++;
+                                }
+                                break;
+                            }
+                            case 4: {
+                                bool flag = true;
+                                if (val.Size() == valCopy.Size()){
+                                    for (int i = 0; i < valCopy.Size(); i++){
+                                        if (val[i] != valCopy[i]){
+                                            flag = false;
+                                        }
+                                    }
+                                } else {
+                                    flag = false;
+                                }
+                                if (flag){
+                                    matches++;
+                                }  
+                                break;
+                            }
+                            case 5: {
+                                string temp1 = iter->value.GetString();
+                                string temp2 = valCopy.GetString();
+                                if (temp1 == temp2){
+                                    matches++;
+                                }
+                                break;
+                            }
+                            case 6: {
+                                if (iter->value.GetDouble() == valCopy.GetDouble()){
+                                    matches++;
+                                }
+                                break;
+                            }
+                            default: {
+                                cout << "Error in switch" << endl;
+                                break;
+                            }
+                        } // end switch
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+        } // end for loop for inputtered members
+        if (matches == count){
+            results++;
+        }
+
+    } //end of loop for docs
+    totalRes += results;
+    cout << "Thread " << threadID << " has finished. " << endl;
+}
+
+//search query with reduced latency
+void InputHandler::searchQueryThreaded(vector<Database*>* DB){
+    string DBchoose, collChoose, docInput, keyName, objName, attName;
+    int count, type, matches=0, results=0;
+    int totalResults = 0;
+    cout << "Choose a database: " << endl;
+    for (int i = 0; i < DB->size(); i++){
+        cout << i << ". " << DB->at(i)->getName() << endl;
+    }
+    getline(cin, DBchoose);
+    try {
+        DB->at(stoi(DBchoose))->getCollections();
+    } catch (exception e){
+        cout << "Error in selection. " << endl;
+        return;
+    }
+    //Checking if the collection is empty
+    if (!DB->at(stoi(DBchoose))->getCollections().empty()){
+        cout << "Choose a collection: " << endl;
+        DB->at(stoi(DBchoose))->print();
+        getline(cin, collChoose);
+        Collection* coll = new Collection();
+        try {
+            coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
+        } catch (exception e){
+            cout << "Error in selection." << endl;
+            return;
+        }
+        cout << "Enter a document. EX: { \"name\" : \"michael\" }" << endl;
+        getline(cin, docInput);
+
+        const char *docToC = docInput.c_str();
+        Document d;
+        ParseResult inputParse = d.Parse(docToC);
+        if (!inputParse){
+            cout << "Error in input. " << endl;
+            return;
+        }
+        count = d.MemberCount(); 
+        coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
+
+        //calculate the spread
+        int end = coll->getDocs().size();
+        int start = 0;
+        int numThreads = 5;
+        vector<thread> threadVect;
+        int spread = end / numThreads;
+        int newEnd = start + spread - 1;
+
+        //start timer, create threads to search
+        auto start1 = high_resolution_clock::now();
+        for (int i = 0; i < numThreads; i++){
+            threadVect.emplace_back(&InputHandler::searchT,this,start,newEnd, coll, &d, ref(totalResults), i);
+            start += spread;
+            newEnd += spread;
+        }
+        if (start < end){
+            thread t1(&InputHandler::searchT, this, start, end-1, coll, &d, ref(totalResults), 5);
+            t1.join();
+        }
+        for (auto& t : threadVect){
+            t.join();
+        }
+        //if there are remaining unsearched docs, search them
+        //if (start < end){
+            //thread t1(&InputHandler::searchT, this, start, end, coll, &d, ref(totalResults));
+            //t1.join();
+        //}
+        cout << "Total Matches Found: " << totalResults << endl;
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start1);
+        cout << "Time taken to search: "<< duration.count() << " microseconds" << endl;
+    } else {
+        cout << "No collections in this database. " << endl;
+    }
 }

@@ -38,7 +38,7 @@ public:
     void removeDoc(vector<Database*>*);
     void updateDB(vector<Database*>*);
     void updateColl(vector<Database*>*);
-    void searchQuery(vector<Database*>*);
+    void searchQuery(vector<Database*>* DB, string collChoose,string docInput ,string DBchoose,Collection *coll);
 };
 
 //displays main menu for user and returns chosen option 
@@ -348,32 +348,17 @@ Examples:
 { "driver" : {"name":"kevin", "age":21}}
 { "driver.age" : 21 }
 */
-void InputHandler::searchQuery(vector<Database*>* DB){
-    string DBchoose, collChoose, docInput, keyName, objName, attName;
+void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string docInput ,string DBchoose,Collection *coll){
+    string  keyName, objName, attName;
     int count, type, matches=0, results=0;
-    cout << "Choose a database: " << endl;
-    for (int i = 0; i < DB->size(); i++){
-        cout << i << ". " << DB->at(i)->getName() << endl;
-    }
-    getline(cin, DBchoose);
+    Document d, d2;
+        
+    const char *docToC = docInput.c_str(); 
+    d.Parse(docToC);
+    count = d.MemberCount(); 
+    
     
     //Checking if the Collection is empty 
-    if (!DB->at(stoi(DBchoose))->getCollections().empty()){
-        cout << "Choose a collection: " << endl;
-        DB->at(stoi(DBchoose))->print();
-        getline(cin, collChoose);
-        cout << "Enter a document. EX: { \"name\" : \"michael\" }" << endl;
-        getline(cin, docInput);
-       
-        //Converting user input to c string 
-        const char *docToC = docInput.c_str();
-        Document d, d2;
-        
-    
-        d.Parse(docToC);
-        count = d.MemberCount(); 
-        Collection* coll = new Collection();
-        coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
         
         for (int i = 0; i < coll->getDocs().size(); i++){
             bool objAttFlag = false;
@@ -594,10 +579,8 @@ void InputHandler::searchQuery(vector<Database*>* DB){
             }
         } // end of for loop for documents in the collection
         cout << "Total Matches Found: " << results << endl;
-
-    } else {
-        cout << "No collections in this database. " << endl;
-    }
+        
+     
 }
 
 void InputHandler::removeDoc(vector<Database*>* DB){

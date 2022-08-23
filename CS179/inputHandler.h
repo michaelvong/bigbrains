@@ -355,7 +355,8 @@ Examples:
 { "driver" : {"name":"kevin", "age":21}}
 { "driver.age" : 21 }
 */
-void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string docInput ,string DBchoose,Collection *coll){
+void InputHandler::searchQuery(vector<Database*>* DB){
+    string collChoose, docInput, DBchoose;
     string  keyName, objName, attName;
     int count, type, matches=0, results=0;
     cout << "Choose a database: " << endl;

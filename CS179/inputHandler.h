@@ -355,8 +355,8 @@ Examples:
 { "driver" : {"name":"kevin", "age":21}}
 { "driver.age" : 21 }
 */
-void InputHandler::searchQuery(vector<Database*>* DB){
-    string DBchoose, collChoose, docInput, keyName, objName, attName;
+void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string docInput ,string DBchoose,Collection *coll){
+    string  keyName, objName, attName;
     int count, type, matches=0, results=0;
     cout << "Choose a database: " << endl;
     for (int i = 0; i < DB->size(); i++){
@@ -879,6 +879,7 @@ void InputHandler::searchT(int start, int end, Collection* coll, Document* d, in
                     break;
                 }
             }
+
         } // end for loop for inputtered members
         if (matches == count){
             results++;

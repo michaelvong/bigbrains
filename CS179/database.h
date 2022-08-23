@@ -2,7 +2,7 @@
 #include <iostream>
 #include "collection.h"
 #include <string>
-//#include "direct.h" //uncomment this when using windows
+#include "direct.h" //uncomment this when using windows
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fstream>

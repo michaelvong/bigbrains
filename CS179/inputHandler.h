@@ -355,7 +355,8 @@ Examples:
 { "driver" : {"name":"kevin", "age":21}}
 { "driver.age" : 21 }
 */
-void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string docInput ,string DBchoose,Collection *coll){
+void InputHandler::searchQuery(vector<Database*>* DB){
+    string collChoose, docInput, DBchoose;
     string  keyName, objName, attName;
     int count, type, matches=0, results=0;
     cout << "Choose a database: " << endl;
@@ -385,7 +386,6 @@ void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string d
         getline(cin, docInput);
        
         //Converting user input to c string 
-        auto start = high_resolution_clock::now();
         const char *docToC = docInput.c_str();
         Document d, d2;
     
@@ -396,7 +396,7 @@ void InputHandler::searchQuery(vector<Database*>* DB, string collChoose,string d
         }
         count = d.MemberCount(); 
         coll = DB->at(stoi(DBchoose))->getCollection(stoi(collChoose));
-        
+        auto start = high_resolution_clock::now();
         for (int i = 0; i < coll->getDocs().size(); i++){
             bool objAttFlag = false;
             matches = 0;     
@@ -954,11 +954,6 @@ void InputHandler::searchQueryThreaded(vector<Database*>* DB){
         for (auto& t : threadVect){
             t.join();
         }
-        //if there are remaining unsearched docs, search them
-        //if (start < end){
-            //thread t1(&InputHandler::searchT, this, start, end, coll, &d, ref(totalResults));
-            //t1.join();
-        //}
         cout << "Total Matches Found: " << totalResults << endl;
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start1);

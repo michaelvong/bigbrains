@@ -33,6 +33,7 @@ Please select an option:
 Enter database name: db1
 
 When prompted for names, letters, numbers, and symbols are available.
+
 Ex. (Query Thread Search): 
 Enter a document. EX: { "name" : "michael" }
 {"player_name":"Travis Knight"}

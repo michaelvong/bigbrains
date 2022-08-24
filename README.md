@@ -8,17 +8,17 @@ Description:
 
 Software Prequisties:
 
--C++17
--Utilizes Rapidjson parser, found at: https://github.com/Tencent/rapidjson
+- C++17
+- Utilizes Rapidjson parser, found at: https://github.com/Tencent/rapidjson
 
 Command to Compile: 
 
--Terminal -> Run Build Task (CTRL+SHIFT+B)
--Build with C/C++:g++.exe active build file
+- Terminal -> Run Build Task (CTRL+SHIFT+B)
+- Build with C/C++:g++.exe active build file
 
 Command to Run:
 
--.\main
+- .\main
 
 Commands for Functionality:
 Menu is accessible by numbers from the keyboard (0-9):

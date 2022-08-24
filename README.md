@@ -1,7 +1,7 @@
-# bigbrains
+#MongoDB clone by team bigbrains
 
 Description: 
-
+-Database application with 
 Software Prequisties: C++17
 
 Command to Compile: Terminal -> Run Build Task (CTRL+SHIFT+B)

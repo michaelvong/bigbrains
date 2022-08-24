@@ -4,7 +4,7 @@ Description:
 - We made a Document Database application that can process and work with JSON Files
 - Follows MongoDB's implementation of organization through Databases, Collections, and Documents
 - This project encapsulates a small subet of features that noSQL Databases, such as MongoDB, offer. 
-- Some of the functionality emulated include CRUD Operations, Searching, and Threaded Searching
+- Some of the functionality emulated include CRUD Operations, Sequential Searching, and Threaded Searching
 
 Software Prequisties:
 

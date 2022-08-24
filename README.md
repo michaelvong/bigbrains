@@ -22,6 +22,7 @@ Menu is accessible by numbers from the keyboard (0-9):
 7. Quit
 
 Submenus options are selected by number as well:
+
 Ex. 1. Add
 1
 Please select an option:

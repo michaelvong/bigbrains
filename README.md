@@ -6,14 +6,19 @@ Description:
 - This project encapsulates a small subet of features that noSQL Databases, such as MongoDB, offer. 
 - Some of the functionality emulated include 
 
-Software Prequisties: 
+Software Prequisties:
+
 -C++17
 -Utilizes Rapidjson parser, found at: https://github.com/Tencent/rapidjson
 
-Command to Compile: Terminal -> Run Build Task (CTRL+SHIFT+B)
-  build with C/C++:g++.exe active build file
+Command to Compile: 
 
-Command to Run: .\main
+-Terminal -> Run Build Task (CTRL+SHIFT+B)
+-Build with C/C++:g++.exe active build file
+
+Command to Run:
+
+-.\main
 
 Commands for Functionality:
 Menu is accessible by numbers from the keyboard (0-9):
